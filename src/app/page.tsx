@@ -1,6 +1,5 @@
 import Image from "next/image";
 
-const unusedVariable = "This will trigger an ESLint error"; // Erro proposital para teste
 
 export default function Home() {
   return (
