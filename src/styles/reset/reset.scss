@@ -1,0 +1,61 @@
+/* Reset básico para grandes projetos */
+
+/* Remove margens e paddings padrão */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Define estilos básicos para body */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Remove decorações de links */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Define estilos padrão para listas */
+ul,
+ol {
+    list-style: none;
+}
+
+/* Define estilos padrão para imagens */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Define estilos padrão para botões */
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+/* Define estilos padrão para inputs */
+input,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Define estilos padrão para tabelas */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 1px solid #ddd;
+}
