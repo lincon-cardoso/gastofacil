@@ -6,7 +6,7 @@ set -e +o pipefail
 # Set up paths first
 bin_name="codacy-cli-v2"
 
-# Determine OS-specific paths
+# Determine OS-specific paths fc
 os_name=$(uname)
 arch=$(uname -m)
 
