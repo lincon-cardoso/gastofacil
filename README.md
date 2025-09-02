@@ -20,6 +20,9 @@ Este é um [Next.js](https://nextjs.org) project bootstrapped with [`create-next
 - `npm run build` — gera a build de produção
 - `npm run start` — inicia o servidor em produção
 - `npm run lint` — executa o linter
+- `npm run test` — executa os testes com cobertura
+- `npm run test:watch` — executa os testes em modo de observação
+- `npm run format` — formata o código com Prettier
 
 ## Como iniciar
 
