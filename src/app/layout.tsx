@@ -1,6 +1,8 @@
-import "../styles/globals.scss"; // Importa os estilos globais
+import "../styles/globals.scss";
+import type { Metadata } from "next";
+import type React from "react";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "GastoFácil - Gerenciador Contas",
   description:
     "Gerencie seus gastos de forma fácil e eficiente com o GastoFácil.",
@@ -11,9 +13,9 @@ export const metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="pt-BR">
       <body>{children}</body>

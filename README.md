@@ -4,17 +4,82 @@ Projeto Next.js criado com TypeScript, ESLint, App Router, estrutura em src/ e s
 
 ---
 
-Este projeto foi inicializado **sem Tailwind CSS**, conforme solicitado.
+## Visão Geral
 
-O pacote `sass` já está instalado. Para usar, crie arquivos `.scss` ou `.sass` normalmente em seus componentes.
+O **gastofacil** é um projeto desenvolvido com o framework Next.js, utilizando TypeScript para tipagem estática e Sass para estilização. Ele foi configurado para seguir boas práticas de desenvolvimento, incluindo ESLint para linting e Prettier para formatação de código.
 
 ---
 
-Este é um [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Estrutura do Projeto
 
-## Getting Started
+A estrutura do projeto segue o padrão recomendado pelo Next.js, com algumas customizações:
 
-## Scripts principais
+```
+public/         # Arquivos públicos, como imagens e ícones
+src/            # Código-fonte principal
+  app/          # Páginas e layout principal
+  components/   # Componentes reutilizáveis
+  contexts/     # Contextos do React
+  hooks/        # Hooks customizados
+  services/     # Serviços e chamadas de API
+  styles/       # Estilos globais e específicos
+  types/        # Definições de tipos TypeScript
+  utils/        # Funções utilitárias
+```
+
+---
+
+## Configuração e Instalação
+
+### Pré-requisitos
+
+- Node.js (versão 18 ou superior)
+- npm (gerenciador de pacotes)
+
+### Passos para rodar o projeto localmente
+
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/lincon-cardoso/gastofacil.git
+```
+
+2. Instale as dependências:
+
+```bash
+npm install
+```
+
+3. Inicie o servidor de desenvolvimento:
+
+```bash
+npm run dev
+```
+
+4. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
+
+---
+
+## Dependências Principais
+
+- **Next.js**: Framework React para aplicações web modernas.
+- **TypeScript**: Superset do JavaScript para tipagem estática.
+- **Sass**: Pré-processador CSS para estilos mais organizados.
+- **ESLint**: Ferramenta de linting para manter a qualidade do código.
+- **Prettier**: Formatação automática de código.
+
+---
+
+## Padrões e Tecnologias
+
+- **Estrutura Modular**: Código organizado em pastas específicas para facilitar a manutenção.
+- **App Router**: Utilização do novo sistema de roteamento do Next.js.
+- **Sass**: Estilização com suporte a variáveis, mixins e aninhamento.
+- **ESLint e Prettier**: Configurados para garantir consistência no código.
+
+---
+
+## Scripts Disponíveis
 
 - `npm run dev` — inicia o servidor de desenvolvimento
 - `npm run build` — gera a build de produção
@@ -24,31 +89,33 @@ Este é um [Next.js](https://nextjs.org) project bootstrapped with [`create-next
 - `npm run test:watch` — executa os testes em modo de observação
 - `npm run format` — formata o código com Prettier
 
-## Como iniciar
+---
 
-Para rodar o servidor de desenvolvimento:
+## Contribuição
+
+1. Faça um fork do repositório.
+2. Crie uma branch para sua feature ou correção de bug:
 
 ```bash
-npm run dev
+git checkout -b minha-feature
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no navegador para ver o resultado.
+3. Faça commit das suas alterações:
 
-Você pode começar a editar a página modificando `app/page.tsx`. O resultado será atualizado automaticamente.
+```bash
+git commit -m "Descrição da alteração"
+```
 
-Este projeto utiliza [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para otimizar e carregar fontes automaticamente.
+4. Envie para o repositório remoto:
 
-## Learn More
+```bash
+git push origin minha-feature
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Abra um Pull Request explicando suas alterações.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contato
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para dúvidas ou sugestões, entre em contato com o mantenedor do projeto através do GitHub: [lincon-cardoso](https://github.com/lincon-cardoso).
