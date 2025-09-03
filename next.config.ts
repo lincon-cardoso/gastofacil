@@ -117,8 +117,8 @@ const nextConfig: NextConfig = {
     maxInactiveAge: isDev ? 0 : 15_000,
   },
 
-  headers() {
-    return Promise.resolve([
+  async headers() {
+    return [
       // ─── HTML / Páginas dinâmicas ───────────────────────
       {
         source: "/:path*",
@@ -149,7 +149,7 @@ const nextConfig: NextConfig = {
         source: "/_next/static/:path*",
         headers: [
           {
-            key: "Cache-control",
+            key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
         ],
@@ -160,12 +160,12 @@ const nextConfig: NextConfig = {
         source: "/_next/image/:path*",
         headers: [
           {
-            key: "Cache-control",
+            key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
         ],
       },
-    ]);
+    ];
   },
 };
 

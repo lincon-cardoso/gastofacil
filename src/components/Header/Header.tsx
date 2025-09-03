@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -61,7 +60,7 @@ export function Header() {
             Criar conta
           </Link>
         </div>
-      </div>
+      </div>      
     </header>
   );
 }
