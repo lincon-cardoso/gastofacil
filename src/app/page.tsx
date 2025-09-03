@@ -3,8 +3,7 @@ import { Header, Main, Footer } from "@/components";
 export default function Home() {
   return (
     <div>
-      <Header />
-      teste
+      <Header />      
       {/* <Main />
       <Footer /> */}
     </div>
