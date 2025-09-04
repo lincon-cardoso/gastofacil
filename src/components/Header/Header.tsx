@@ -4,7 +4,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import type { ReactElement } from "react";
-import { Disclosure } from "@headlessui/react";
 
 interface NavItem {
   label: string;
