@@ -61,8 +61,6 @@ export function Header(): ReactElement {
             />
             <span className="gf-slogan">GastoFácial</span>
           </Link>
-        </div>
-
         {/* Botão hambúrguer: acessível e interativo */}
         <button
           type="button"
@@ -76,6 +74,8 @@ export function Header(): ReactElement {
           <span className="gf-hamburger-line" aria-hidden="true" />
           <span className="gf-hamburger-line" aria-hidden="true" />
         </button>
+        </div>
+
 
         <nav
           id="gf-main-nav"

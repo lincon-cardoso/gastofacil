@@ -1,24 +1,112 @@
 @media (max-width: 1300px) {
-    .gf-container {
-        padding: 0 40px;
-
+    .gf-header {
+        .gf-container {
+            padding: 0 40px;
+        }
     }
 }
 
 @media (max-width: 990px) {
-    .gf-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-        border: 2px solid red;
-
+    .gf-header {
+        .gf-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
     }
 }
 
 @media (max-width: 500px) {
-    .gf-menu{
-        display: flex;
-        flex-direction: column;
+
+    /* Mostrar o botão apenas em telas pequenas */
+    .gf-header {
+        .gf-container {
+            .gf-hamburger {
+                position: relative;
+                /* necessário para posicionar as linhas ao abrir */
+                display: inline-flex;
+                flex-direction: column;
+                /* empilha as linhas verticalmente */
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                /* espaço entre as linhas */
+                width: 44px;
+                height: 44px;
+                background: transparent;
+                border: 0;
+                padding: 0.5rem;
+                cursor: pointer;
+
+                &:focus {
+                    outline: 3px solid color-mix(in srgb, var(--primary, #0ea5a4) 40%, transparent);
+                    outline-offset: 2px;
+                    border-radius: 6px;
+                }
+
+
+                .gf-hamburger-line {
+                    width: 22px;
+                    /* ajuste para caber dentro do botão */
+                    height: 2px;
+                    background: var(--text, #334155);
+                    display: block;
+                    border-radius: 2px;
+                    transition: transform 250ms ease, opacity 200ms ease;
+                    transform-origin: center;
+                }
+
+                /* Estado aberto: centraliza as linhas e transforma em X */
+                &.gf-hamburger--open {
+                    .gf-hamburger-line {
+                        position: absolute;
+                        left: 50%;
+                        top: 50%;
+                    }
+
+                    .gf-hamburger-line:nth-child(1) {
+                        transform: translate(-50%, -50%) rotate(45deg);
+                    }
+
+                    .gf-hamburger-line:nth-child(2) {
+                        opacity: 0;
+                        transform: translate(-50%, -50%) scaleX(0);
+                    }
+
+                    .gf-hamburger-line:nth-child(3) {
+                        transform: translate(-50%, -50%) rotate(-45deg);
+                    }
+                }
+            }
+
+            .gf-main-nav {
+                width: 100%;
+                overflow: hidden;
+                max-height: 0;
+                transition: max-height 300ms ease;
+
+                &.gf-main-nav--open,
+                &[data-open="true"] {
+                    max-height: 1000px;
+                    /* suficiente para o conteúdo do menu */
+                }
+
+                .gf-menu {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    padding: 0.5rem 0;
+                    margin: 0;
+                }
+            }
+
+            .gf-actions {
+                width: 100%;
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+            }
+        }
     }
 }
