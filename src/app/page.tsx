@@ -4,8 +4,8 @@ export default function Home() {
   return (
     <div>
       <Header />      
-      {/* <Main /> */}
-      {/* <Footer /> */}
+      <Main />
+      <Footer />
     </div>
   );
 }

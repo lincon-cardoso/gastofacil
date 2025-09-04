@@ -1,6 +1,57 @@
-/* Estilos básicos do Footer */
+@use "./media.module.scss";
+
 .footer {
-    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
     text-align: center;
     font-size: 0.9rem;
+
+    .footer-columns {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1200px;
+        margin-bottom: 2rem;
+
+        .footer-column {
+            flex: 1;
+            margin: 0 1rem;
+
+            h4 {
+                margin-bottom: 1rem;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            ul {
+                list-style: none;
+                padding: 0;
+
+                li {
+                    margin-bottom: 0.5rem;
+
+                    a {
+                        color: var(--text-muted, #6b7280);
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .footer-disclaimers {
+        margin-bottom: 2rem;
+        font-size: 0.8rem;
+        color: var(--text-muted, #6b7280);
+    }
+
+    small {
+        color: var(--text-muted, #6b7280);
+    }
 }
