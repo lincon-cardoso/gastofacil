@@ -4,6 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import type { ReactElement } from "react";
+import { Disclosure } from "@headlessui/react";
 
 interface NavItem {
   label: string;
@@ -14,7 +15,6 @@ export function Header(): ReactElement {
   const pathname = usePathname();
 
   const normalizePath = (p?: string): string => {
-    // remove query/hash e trailing slashes (mantém '/' como raiz)
     const base = (p ?? "/").split(/[?#]/)[0];
     if (base === "/") return "/";
     return base.replace(/\/+$|\s+/g, "").replace(/\/$/, "") || "/";
@@ -56,7 +56,7 @@ export function Header(): ReactElement {
               height={50}
               priority
             />
-            <span className="slogan">GastoFácil</span>
+            <span className="slogan">GastoFácial</span>
           </Link>
         </div>
 
@@ -81,9 +81,10 @@ export function Header(): ReactElement {
             Entrar
           </Link>
           <Link href="/signup" className="btn primary">
-            Criar conta
+            Criar contar
           </Link>
         </div>
+
       </div>
     </header>
   );
