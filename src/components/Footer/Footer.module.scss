@@ -1,5 +1,6 @@
 @use "./media.module.scss";
 
+/* Footer alinhado esteticamente ao Header: sombras sutis, superfície mais contida e micro-interações */
 .gf-footer {
     display: flex;
     flex-direction: column;
@@ -8,21 +9,31 @@
     text-align: center;
     font-size: 0.9rem;
 
+    /* superfície e leve sombra invertida para indicar separação do conteúdo abaixo */
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface, #fff) 98%, #f8fafc) 0%, var(--surface, #fff) 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 -6px 18px rgba(16, 24, 40, 0.03);
+
     .gf-footer-columns {
         display: flex;
         justify-content: space-between;
         width: 100%;
         max-width: 1200px;
         margin-bottom: 2rem;
+        gap: 1rem;
 
         .gf-footer-column {
             flex: 1;
             margin: 0 1rem;
+            min-width: 140px;
 
             h4 {
                 margin-bottom: 1rem;
-                font-size: 1.1rem;
-                font-weight: 600;
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: var(--brand, #0f172a);
+                letter-spacing: 0.2px;
+                text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
             }
 
             ul {
@@ -35,9 +46,20 @@
                     a {
                         color: var(--text-muted, #6b7280);
                         text-decoration: none;
+                        display: inline-block;
+                        padding: 0.15rem 0.25rem;
+                        border-radius: 6px;
+                        transition: color 200ms ease, transform 180ms cubic-bezier(.2, .9, .2, 1), box-shadow 180ms ease;
 
                         &:hover {
-                            text-decoration: underline;
+                            color: var(--primary, #0ea5a4);
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 14px rgba(12, 74, 65, 0.04);
+                        }
+
+                        &:focus-visible {
+                            outline: 3px solid color-mix(in srgb, var(--primary, #0ea5a4) 40%, transparent);
+                            outline-offset: 2px;
                         }
                     }
                 }
@@ -46,12 +68,29 @@
     }
 
     .gf-footer-disclaimers {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         font-size: 0.8rem;
         color: var(--text-muted, #6b7280);
+        max-width: 1100px;
+        line-height: 1.4;
+        background: transparent;
+        padding: 0 1rem;
     }
 
     small {
         color: var(--text-muted, #6b7280);
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    /* reduzir movimento para usuários que preferem isso */
+    @media (prefers-reduced-motion: reduce) {
+
+        .gf-footer-columns a,
+        .gf-footer-columns h4,
+        .gf-footer-disclaimers {
+            transition: none !important;
+            transform: none !important;
+        }
     }
 }

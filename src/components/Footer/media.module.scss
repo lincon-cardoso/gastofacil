@@ -16,3 +16,17 @@
         }
     }
 }
+
+/* Ajustes menores para manter consistência visual com o header em telas pequenas */
+@media (max-width: 700px) {
+    .gf-footer {
+        .gf-footer-columns {
+            padding: 0 0.75rem;
+            gap: 0.75rem;
+        }
+
+        .gf-footer-disclaimers {
+            padding: 0 0.75rem;
+        }
+    }
+}
