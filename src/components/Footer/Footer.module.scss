@@ -1,6 +1,6 @@
 @use "./media.module.scss";
 
-.footer {
+.gf-footer {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -8,14 +8,14 @@
     text-align: center;
     font-size: 0.9rem;
 
-    .footer-columns {
+    .gf-footer-columns {
         display: flex;
         justify-content: space-between;
         width: 100%;
         max-width: 1200px;
         margin-bottom: 2rem;
 
-        .footer-column {
+        .gf-footer-column {
             flex: 1;
             margin: 0 1rem;
 
@@ -45,7 +45,7 @@
         }
     }
 
-    .footer-disclaimers {
+    .gf-footer-disclaimers {
         margin-bottom: 2rem;
         font-size: 0.8rem;
         color: var(--text-muted, #6b7280);

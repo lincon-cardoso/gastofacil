@@ -27,7 +27,7 @@ export function Header(): ReactElement {
       { label: "Planilhas", href: "/sheets" },
       { label: "Objetivos", href: "/goals" },
       { label: "Blog", href: "/blog" },
-      { label: "Suporte", href: "/support" },      
+      { label: "Suporte", href: "/support" },
     ],
     []
   );
@@ -39,15 +39,15 @@ export function Header(): ReactElement {
   };
 
   return (
-    <header className="header" role="banner">
+    <header className="gf-header" role="banner">
       {/* Skip link para acessibilidade de teclado */}
-      <a className="skip-link" href="#main">
+      <a className="gf-skip-link" href="#main">
         Pular para o conteúdo
       </a>
 
-      <div className="container">
-        <div className="brand">
-          <Link href="/" className="logo" aria-label="GastoFácil — Início">
+      <div className="gf-container">
+        <div className="gf-brand">
+          <Link href="/" className="gf-logo" aria-label="GastoFácil — Início">
             <Image
               src="/images/imagem.png"
               alt="GastoFácil Logo"
@@ -55,17 +55,17 @@ export function Header(): ReactElement {
               height={50}
               priority
             />
-            <span className="slogan">GastoFácial</span>
+            <span className="gf-slogan">GastoFácial</span>
           </Link>
         </div>
 
-        <nav className="nav" aria-label="Menu principal">
-          <ul className="menu">
+        <nav className="gf-main-nav" aria-label="Menu principal">
+          <ul className="gf-menu">
             {menu.map((item) => (
-              <li key={item.href} className="menuItem">
+              <li key={item.href} className="gf-menu-item">
                 <Link
                   href={item.href}
-                  className={isActive(item.href) ? "active" : undefined}
+                  className={isActive(item.href) ? "gf-is-active" : undefined}
                   aria-current={isActive(item.href) ? "page" : undefined}
                 >
                   {item.label}
@@ -75,15 +75,14 @@ export function Header(): ReactElement {
           </ul>
         </nav>
 
-        <div className="actions">
-          <Link href="/login" className="btn">
+        <div className="gf-actions">
+          <Link href="/login" className="gf-btn">
             Entrar
           </Link>
-          <Link href="/signup" className="btn primary">
+          <Link href="/signup" className="gf-btn gf-btn--primary">
             Criar contar
           </Link>
         </div>
-
       </div>
     </header>
   );

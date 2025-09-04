@@ -1,7 +1,7 @@
 @use "./media.module.scss";
 
-.header {
-    .skip-link {
+.gf-header {
+    .gf-skip-link {
         position: absolute;
         left: -9999px;
         top: auto;
@@ -33,7 +33,7 @@
     background: var(--surface, #fff);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 
-    .container {
+    .gf-container {
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
@@ -41,7 +41,7 @@
         justify-content: space-between;
         gap: 1rem;
 
-        .brand {
+        .gf-brand {
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -54,11 +54,11 @@
                 max-width: 100%;
             }
 
-            .slogan {
+            .gf-slogan {
                 color: var(--text-muted, #6b7280);
             }
 
-            .logo {
+            .gf-logo {
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
@@ -69,12 +69,12 @@
             }
         }
 
-        .nav {
+        .gf-main-nav {
             flex-grow: 1;
             display: flex;
             justify-content: center;
 
-            .menu {
+            .gf-menu {
                 display: flex;
                 gap: 1rem;
                 list-style: none;
@@ -82,7 +82,7 @@
                 padding: 0;
                 align-items: center;
 
-                .menuItem {
+                .gf-menu-item {
                     a {
                         color: var(--text, #334155);
                         text-decoration: none;
@@ -98,7 +98,7 @@
                             outline-offset: 2px;
                         }
 
-                        &.active,
+                        &.gf-is-active,
                         &[aria-current="page"] {
                             color: var(--primary, #0ea5a4);
                         }
@@ -107,12 +107,12 @@
             }
         }
 
-        .actions {
+        .gf-actions {
             display: flex;
             gap: 0.5rem;
             align-items: center;
 
-            .btn {
+            .gf-btn {
                 display: inline-block;
                 padding: 0.45rem 0.9rem;
                 border-radius: 6px;
@@ -123,7 +123,7 @@
                 text-decoration: none;
                 transition: background 0.3s ease, color 0.3s ease;
 
-                &.primary {
+                &.gf-btn--primary {
                     background: var(--primary, #0ea5a4);
                     color: #fff;
                     border-color: var(--primary, #0ea5a4);

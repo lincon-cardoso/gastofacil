@@ -1,8 +1,8 @@
 export function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-columns">
-        <div className="footer-column">
+    <footer className="gf-footer">
+      <div className="gf-footer-columns">
+        <div className="gf-footer-column">
           <h4>Produto</h4>
           <ul>
             <li>
@@ -19,7 +19,7 @@ export function Footer() {
             </li>
           </ul>
         </div>
-        <div className="footer-column">
+        <div className="gf-footer-column">
           <h4>Conteúdo</h4>
           <ul>
             <li>
@@ -33,7 +33,7 @@ export function Footer() {
             </li>
           </ul>
         </div>
-        <div className="footer-column">
+        <div className="gf-footer-column">
           <h4>Suporte</h4>
           <ul>
             <li>
@@ -50,7 +50,7 @@ export function Footer() {
             </li>
           </ul>
         </div>
-        <div className="footer-column">
+        <div className="gf-footer-column">
           <h4>Redes</h4>
           <ul>
             <li>
@@ -65,7 +65,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="footer-disclaimers">
+      <div className="gf-footer-disclaimers">
         <p>
           <strong>Projeto de portfólio:</strong> Este site é um protótipo
           desenvolvido por Lincon para fins de demonstração técnica (Next.js,
