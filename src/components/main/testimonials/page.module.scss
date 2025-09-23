@@ -1,0 +1,92 @@
+.testimonialsSection {
+    padding: 6rem 0;
+    background-color: #18181b;
+    border-bottom: 1px solid #27272a;
+
+    .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        text-align: center;
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            color: #a1a1aa;
+            margin-bottom: 2.5rem;
+            max-width: 40rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+            .card {
+                background-color: #27272a;
+                border: 1px solid #3f3f46;
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                text-align: left;
+                transition: transform 0.2s ease-in-out;
+                display: flex; // Adicionado
+                flex-direction: column; // Adicionado
+
+                &:hover {
+                    transform: scale(1.02);
+                }
+
+                .stars {
+                    color: #facc15;
+                    margin-bottom: 0.5rem;
+                }
+
+                .quote {
+                    color: #e4e4e7;
+                    line-height: 1.5;
+                }
+
+                .figcaption {
+                    margin-top: auto; // Adicionado
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    
+
+                    .avatar {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 1px solid #52525b;
+                        flex-shrink: 0;
+                    }
+
+                    div {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+
+                    .name {
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        color: #ffffff;
+                    }
+
+                    .role {
+                        font-size: 0.75rem;
+                        color: #a1a1aa;
+                    }
+                }
+            }
+        }
+    }
+}

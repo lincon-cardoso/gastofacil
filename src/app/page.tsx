@@ -1,11 +1,14 @@
-import { Header, Main, Footer } from "@/components";
+import Header from "@/components/header/page"
+import Main from "@/components/main/page";
+import Footer from "@/components/footer/page"
+
 
 export default function Home() {
   return (
-    <div>
-      {/* <Header />       */}
+    <main>
+      <Header />
       <Main />
-      {/* <Footer /> */}
-    </div>
+      <Footer />
+    </main>
   );
 }

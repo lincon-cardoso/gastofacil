@@ -1,4 +1,3 @@
-// next.config.js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,14 +5,13 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.APP_ENV === "development";
 
-// ─── Cabeçalhos de Segurança ─────────────────────────────
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self';",
       "base-uri 'self';",
-      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;", // permite Cloudflare
+      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;",
       "style-src 'self' 'unsafe-inline';",
       "img-src 'self' data: https:;",
       "font-src 'self' https: data:;",
@@ -83,7 +81,6 @@ const securityHeaders = [
   },
 ];
 
-// ─── Cabeçalhos para Reporte de Erros ─────────────────────
 const reportHeaders = [
   {
     key: "Report-To",
@@ -117,9 +114,18 @@ const nextConfig: NextConfig = {
     maxInactiveAge: isDev ? 0 : 15_000,
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+    ],
+  },
+
   async headers() {
     return [
-      // ─── HTML / Páginas dinâmicas ───────────────────────
       {
         source: "/:path*",
         headers: [
@@ -143,8 +149,6 @@ const nextConfig: NextConfig = {
           ...reportHeaders,
         ],
       },
-
-      // ─── Assets estáticos versionados ────────────────────
       {
         source: "/_next/static/:path*",
         headers: [
@@ -154,8 +158,6 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-
-      // ─── Imagens otimizadas do Next ─────────────────────
       {
         source: "/_next/image/:path*",
         headers: [

@@ -1,0 +1,105 @@
+.heroSection {
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #000;
+    color: #fff;
+
+    .heroContainer {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+
+    }
+
+    .heroContent {
+        flex: 1;
+        max-width: 600px;
+
+        .heroTitle {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            width: 80%;
+        }
+
+        .heroSubtitle {
+            font-size: 1rem;
+            color: #00ff88;
+            margin-bottom: 1rem;
+        }
+
+        .heroDescription {
+            font-size: 1.0rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .heroStats {
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        .heroButtons {
+            display: flex;
+            gap: 1rem;
+
+            .btnPrimary {
+                background-color: #00ff88;
+                color: #000;
+                padding: 0.75rem 1.5rem;
+                border: none;
+                border-radius: 5px;
+                font-size: 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                &:hover {
+                    background-color: #00cc70;
+                }
+            }
+
+            .btnSecondary {
+                background-color: transparent;
+                color: #00ff88;
+                padding: 0.75rem 1.5rem;
+                border: 1px solid #00ff88;
+                border-radius: 5px;
+                font-size: 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                &:hover {
+                    background-color: #00ff88;
+                    color: #000;
+                }
+            }
+
+            .heroImageContainer {
+                flex: 1;
+                max-width: 588px;
+
+                img {
+                    width: 100%;
+                    height: auto;
+                    border-radius: 10px;
+                    border: 2px solid rgba(255, 255, 255, 0.2); // Borda sutil
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Sombra leve
+                }
+            }
+        }
+
+    }
+}
