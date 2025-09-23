@@ -13,11 +13,13 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.brandContainer}>
-          <div className={styles.logoBackground}>
-            <Image src="/images/img.png" alt="Logo" width={30} height={30} />
-          </div>
-          <h1 className={styles.title}>GastoFácil</h1>
-          <span className={styles.badge}>beta</span>
+          <Link href="/" className={styles.brandLink}>
+            <div className={styles.logoBackground}>
+              <Image src="/images/img.png" alt="Logo" width={30} height={30} />
+            </div>
+            <h1 className={styles.title}>GastoFácil</h1>
+            <span className={styles.badge}>beta</span>
+          </Link>
         </div>
         <nav className={styles.nav} aria-label="Navegação principal">
           <ul>
