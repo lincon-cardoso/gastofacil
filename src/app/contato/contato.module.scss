@@ -1,0 +1,234 @@
+.contatoSection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-width: 1200px;
+    padding: 80px 0;
+    gap: 50px;
+    background-color: #000; // Fundo preto
+
+    .textContainer {
+        width: 600px;
+        height: auto;
+        color: #fff; // Texto branco
+        font-family: Arial, sans-serif;
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .contatoButtons {
+            display: flex;
+            gap: 20px;
+
+            .contatoButton {
+                padding: 10px 20px;
+                font-size: 1rem;
+                font-weight: bold;
+                color: #fff;
+                background-color: #00a000; // Verde para o botão
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+
+                &:hover {
+                    background-color: #008000; // Verde mais escuro no hover
+                }
+            }
+
+            .ajuda {
+                background-color: #0050a0; // Azul para o botão
+
+                &:hover {
+                    background-color: #003080; // Azul mais escuro no hover
+                }
+            }
+        }
+
+        .contatoInfo {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            color: #ccc; // Cinza claro para informações adicionais
+        }
+    }
+
+    .imageContainer {
+        width: 600px;
+        height: auto;
+        border-radius: 10px; // Bordas arredondadas
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; // Ajusta a imagem para cobrir o container
+        }
+    }
+}
+
+.contactChannels {
+    text-align: center;
+    padding: 2rem;
+
+    .title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .description {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    .channels {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+
+        .channel {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            width: 150px;
+            text-align: center;
+
+            .icon {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .channelTitle {
+                font-weight: bold;
+                margin-bottom: 0.3rem;
+            }
+
+            .channelInfo {
+                font-size: 0.9rem;
+                color: #555;
+            }
+        }
+    }
+}
+
+.openTicketFormWrapper {
+    padding: 2rem;
+    background-color: #000; // Fundo preto
+
+    .background {
+        background-color: #111; // Fundo levemente mais claro
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); // Sombra mais escura
+        padding: 2rem;
+    }
+
+    .formContainer {
+        max-width: 600px;
+        margin: 0 auto;
+
+        .title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #fff; // Texto branco
+        }
+
+        .description {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            color: #ccc; // Texto cinza claro
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+
+            .formGroup {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+
+                label {
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    color: #ddd; // Texto cinza claro
+                }
+
+                input,
+                select,
+                textarea {
+                    padding: 0.8rem;
+                    border: 1px solid #444; // Borda cinza escura
+                    border-radius: 4px;
+                    font-size: 1rem;
+                    color: #fff; // Texto branco
+                    background-color: #222; // Fundo cinza escuro
+
+                    &:focus {
+                        outline: none;
+                        border-color: #0070f3; // Azul para foco
+                        box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.5);
+                    }
+                }
+
+                textarea {
+                    resize: vertical;
+                    min-height: 100px;
+                }
+
+                small {
+                    font-size: 0.8rem;
+                    color: #888; // Texto cinza médio
+                }
+            }
+
+            .formActions {
+                display: flex;
+                justify-content: space-between;
+
+                .submitButton {
+                    background-color: #0070f3; // Azul
+                    color: #fff; // Texto branco
+                    padding: 0.8rem 1.5rem;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+
+                    &:hover {
+                        background-color: #005bb5; // Azul mais escuro no hover
+                    }
+                }
+
+                .resetButton {
+                    background-color: #444; // Cinza escuro
+                    color: #fff; // Texto branco
+                    padding: 0.8rem 1.5rem;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+
+                    &:hover {
+                        background-color: #666; // Cinza mais claro no hover
+                    }
+                }
+            }
+        }
+    }
+}

@@ -5,10 +5,8 @@ import styles from "./Header.module.scss";
 export default function Header() {
   const navItems = [
     { href: "/planos", label: "Planos" },
-    { href: "#sobre", label: "Sobre" }, // Novo item
-    { href: "#recursos", label: "Recursos" },
-    { href: "#faq", label: "FAQ" }, // Novo item
-    { href: "#contato", label: "Contato / Suporte" }, // Novo item
+    { href: "/sobre", label: "Sobre" }, // Novo item
+    { href: "/contato", label: "Contato / Suporte" }, // Novo item
   ];
 
   return (

@@ -4,32 +4,52 @@ import styles from "@/app/sobre/page.module.scss";
 
 export default function Sobre() {
   return (
-    <main>
+    <div className={styles.wrapper}>
       <Header />
-      <section className={styles.sobreSection}>
-        <div className={styles.container}>
-          <h1 className={styles.title}>Sobre o GastoFácil</h1>
-          <p className={styles.description}>
-            O GastoFácil é uma plataforma desenvolvida para ajudar você a
-            gerenciar suas finanças de forma simples, eficiente e segura. Nosso
-            objetivo é oferecer ferramentas práticas para que você possa
-            registrar despesas, acompanhar relatórios e planejar o futuro com
-            clareza.
-          </p>
-          <h2 className={styles.subtitle}>Por que escolher o GastoFácil?</h2>
-          <ul className={styles.featuresList}>
-            <li>✔ Controle de despesas ilimitado</li>
-            <li>✔ Relatórios visuais e detalhados</li>
-            <li>✔ Multiplataforma: use no celular e no desktop</li>
-            <li>✔ Segurança de dados com criptografia e conformidade GDPR</li>
-          </ul>
-          <p className={styles.finalNote}>
-            Estamos comprometidos em oferecer a melhor experiência para nossos
-            usuários, ajudando você a alcançar seus objetivos financeiros.
-          </p>
-        </div>
-      </section>
+      <main className={styles.mainContent}>
+        <section className={styles.sobreSection}>
+          <div className={styles.container}>
+            <h1 className={styles.title}>Sobre o projeto</h1>
+            <p className={styles.description}>
+              O GastoFácil é mais que uma ferramenta: é um aliado no dia a dia.
+              Queremos democratizar o acesso ao planejamento financeiro,
+              trazendo clareza, segurança e praticidade para todos os perfis —
+              do estudante ao empreendedor.
+            </p>
+            <div className={styles.cards}>
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Feito para pessoas</h2>
+                <p className={styles.cardDescription}>
+                  Desenvolvido com foco em empatia e simplicidade, pensando na
+                  realidade de quem vive o desafio de organizar suas finanças.
+                </p>
+              </div>
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Educação financeira</h2>
+                <p className={styles.cardDescription}>
+                  Não é só sobre registrar gastos, mas aprender hábitos
+                  melhores, entender padrões e evoluir continuamente.
+                </p>
+              </div>
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Crescimento sustentável</h2>
+                <p className={styles.cardDescription}>
+                  Construímos um roadmap transparente e ouvimos a comunidade
+                  para crescer de forma consistente e responsável.
+                </p>
+              </div>
+            </div>
+            <h2 className={styles.subtitle}>Por que somos diferentes</h2>
+            <ul className={styles.featuresList}>
+              <li>✔ Experiência realmente simples (sem telas poluídas)</li>
+              <li>✔ Relatórios focados em ação, não só gráficos bonitos</li>
+              <li>✔ Acessibilidade AAA e performance em mobile</li>
+              <li>✔ Suporte humano que fala a sua língua</li>
+            </ul>
+          </div>
+        </section>
+      </main>
       <Footer />
-    </main>
+    </div>
   );
 }

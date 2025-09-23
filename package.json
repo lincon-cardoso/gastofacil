@@ -35,6 +35,7 @@
     "dotenv": "^17.2.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.544.0",
     "next-auth": "^4.24.11",
     "next-sitemap": "^4.2.3",
     "pg": "^8.16.3",
