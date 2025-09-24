@@ -31,8 +31,12 @@ export default function Header() {
           </ul>
         </nav>
         <div className={styles.auth}>
-          <button className={styles.login}>Entrar</button>
-          <button className={styles.signup}>Criar conta</button>
+          <Link href="/login" className={styles.login}>
+            Entrar
+          </Link>
+          <Link href="/register" className={styles.signup}>
+            Criar conta
+          </Link>
         </div>
       </div>
     </header>
