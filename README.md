@@ -6,13 +6,23 @@ Projeto Next.js criado com TypeScript, ESLint, App Router, estrutura em src/ e s
 
 ## Visão Geral
 
-O **gastofacil** é um projeto desenvolvido com o framework Next.js, utilizando TypeScript para tipagem estática e Sass para estilização. Ele foi configurado para seguir boas práticas de desenvolvimento, incluindo ESLint para linting e Prettier para formatação de código.
+O **gastofacil** é uma aplicação web desenvolvida com o framework Next.js, projetada para facilitar o gerenciamento de finanças pessoais. Utilizando tecnologias modernas como TypeScript e Sass, o projeto oferece uma interface amigável e responsiva, com foco em boas práticas de desenvolvimento e escalabilidade.
+
+---
+
+## Funcionalidades Principais
+
+- **Gerenciamento de Finanças**: Controle de despesas e receitas.
+- **Interface Responsiva**: Design adaptado para diferentes dispositivos.
+- **Autenticação**: Sistema de login e registro de usuários.
+- **Relatórios Visuais**: Gráficos e relatórios para análise financeira.
+- **Plano de Assinatura**: Diferentes planos para atender às necessidades dos usuários.
 
 ---
 
 ## Estrutura do Projeto
 
-A estrutura do projeto segue o padrão recomendado pelo Next.js, com algumas customizações:
+A estrutura do projeto segue o padrão recomendado pelo Next.js, com algumas customizações para organização e escalabilidade:
 
 ```
 public/         # Arquivos públicos, como imagens e ícones
@@ -88,6 +98,38 @@ npm run dev
 - `npm run test` — executa os testes com cobertura
 - `npm run test:watch` — executa os testes em modo de observação
 - `npm run format` — formata o código com Prettier
+
+---
+
+## Exemplos de Uso
+
+### Adicionando uma Nova Página
+
+1. Crie uma nova pasta dentro de `src/app` com o nome da página.
+2. Adicione um arquivo `page.tsx` com o conteúdo da página.
+
+Exemplo:
+
+```tsx
+export default function NovaPagina() {
+  return <h1>Bem-vindo à nova página!</h1>;
+}
+```
+
+### Criando um Componente Reutilizável
+
+1. Adicione o componente na pasta `src/components`.
+2. Importe e utilize o componente onde necessário.
+
+Exemplo:
+
+```tsx
+import MeuComponente from "@/components/MeuComponente";
+
+export default function Pagina() {
+  return <MeuComponente />;
+}
+```
 
 ---
 
