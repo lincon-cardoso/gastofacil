@@ -5,6 +5,16 @@ import { useRegisterForm } from "@/hooks/useRegisterForm";
 import styles from "../page.module.scss";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { registerSchema } from "@/utils/validation";
+
+interface ValidationErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  termsAccepted?: string;
+  general?: string;
+}
 
 const RegisterForm = () => {
   const {
@@ -18,6 +28,31 @@ const RegisterForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {}
+  );
+
+  const validateForm = () => {
+    const parsed = registerSchema.safeParse(formData);
+    if (parsed.success) {
+      setValidationErrors({});
+      return true;
+    }
+    const fieldErrors: ValidationErrors = {};
+    parsed.error.issues.forEach((i) => {
+      const key = i.path[0]?.toString() as keyof ValidationErrors;
+      if (key && !fieldErrors[key]) fieldErrors[key] = i.message;
+    });
+    setValidationErrors(fieldErrors);
+    return false;
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (validateForm()) {
+      handleSubmit(e);
+    }
+  };
 
   return (
     <div className={styles.registerForm}>
@@ -28,7 +63,7 @@ const RegisterForm = () => {
         <h2>Crie sua conta</h2>
         <p>Comece a organizar suas finanças hoje.</p>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <div className={styles.formGroup}>
           <label htmlFor="name">Nome</label>
           <div className={styles.inputWithIcon}>
@@ -41,8 +76,10 @@ const RegisterForm = () => {
               onChange={handleChange}
             />
           </div>
-          {errors.name && (
-            <span className={styles.fieldError}>{errors.name}</span>
+          {(errors.name || validationErrors.name) && (
+            <span className={styles.fieldError}>
+              {validationErrors.name || errors.name}
+            </span>
           )}
         </div>
 
@@ -58,8 +95,10 @@ const RegisterForm = () => {
               onChange={handleChange}
             />
           </div>
-          {errors.email && (
-            <span className={styles.fieldError}>{errors.email}</span>
+          {(errors.email || validationErrors.email) && (
+            <span className={styles.fieldError}>
+              {validationErrors.email || errors.email}
+            </span>
           )}
         </div>
 
@@ -82,8 +121,10 @@ const RegisterForm = () => {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {errors.password && (
-            <span className={styles.fieldError}>{errors.password}</span>
+          {(errors.password || validationErrors.password) && (
+            <span className={styles.fieldError}>
+              {validationErrors.password || errors.password}
+            </span>
           )}
         </div>
 
@@ -106,8 +147,10 @@ const RegisterForm = () => {
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {errors.confirmPassword && (
-            <span className={styles.fieldError}>{errors.confirmPassword}</span>
+          {(errors.confirmPassword || validationErrors.confirmPassword) && (
+            <span className={styles.fieldError}>
+              {validationErrors.confirmPassword || errors.confirmPassword}
+            </span>
           )}
         </div>
 
@@ -125,8 +168,10 @@ const RegisterForm = () => {
             </Link>
             .
           </label>
-          {errors.termsAccepted && (
-            <span className={styles.fieldError}>{errors.termsAccepted}</span>
+          {(errors.termsAccepted || validationErrors.termsAccepted) && (
+            <span className={styles.fieldError}>
+              {validationErrors.termsAccepted || errors.termsAccepted}
+            </span>
           )}
         </div>
 

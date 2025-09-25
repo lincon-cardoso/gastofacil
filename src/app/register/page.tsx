@@ -1,12 +1,7 @@
-"use client";
 import Footer from "@/components/footer/page";
 import Headers from "@/components/header/page";
-import dynamic from "next/dynamic";
 import styles from "@/app/register/page.module.scss";
-
-const RegisterForm = dynamic(() => import("./components/RegisterForm"), {
-  ssr: false,
-});
+import RegisterForm from "./components/RegisterForm";
 
 export default function RegisterPage() {
   return (
@@ -25,7 +20,6 @@ export default function RegisterPage() {
             <li>LGPD • Criptografia • Backups diários</li>
           </ul>
         </section>
-
         <section className={styles.registerForm}>
           <RegisterForm />
         </section>
