@@ -228,3 +228,11 @@
         text-decoration: underline;
     }
 }
+
+/* Adicionando uma classe para estilizar mensagens de erro */
+.errorMessage {
+    color: red;
+    text-align: center;
+    font-size: 1.0rem;
+    border: 1px solid red;
+}

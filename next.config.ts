@@ -2,29 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import type { NextConfig } from "next";
-import crypto from "crypto";
 
 const isDev = process.env.APP_ENV === "development";
 
-const generateNonce = () => crypto.randomBytes(16).toString("base64");
-
 const securityHeaders = [
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self';",
-      "base-uri 'self';",
-      "script-src 'self' 'nonce-{{nonce}}' https://static.cloudflareinsights.com;",
-      "style-src 'self' 'nonce-{{nonce}}';",
-      "img-src 'self' data: https:;",
-      "font-src 'self' https: data:;",
-      "connect-src 'self' https:;",
-      "frame-src 'none';",
-      "object-src 'none';",
-      "form-action 'self';",
-      "frame-ancestors 'none';",
-    ].join(" "),
-  },
   {
     key: "Permissions-Policy",
     value: [
@@ -128,8 +109,16 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    const nonce = generateNonce();
     return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Powered-By",
+            value: "", // Remove o header padrão
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [
@@ -137,21 +126,6 @@ const nextConfig: NextConfig = {
             key: "Cache-Control",
             value:
               "public, max-age=0, s-maxage=300, must-revalidate, stale-while-revalidate=60",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: [
-              `default-src 'self';`,
-              `script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com;`,
-              `style-src 'self' 'nonce-${nonce}';`,
-              `img-src 'self' data: https:;`,
-              `font-src 'self' https: data:;`,
-              `connect-src 'self' https:;`,
-              `frame-src 'none';`,
-              `object-src 'none';`,
-              `form-action 'self';`,
-              `frame-ancestors 'none';`,
-            ].join(" "),
           },
           ...(isDev
             ? [
@@ -192,6 +166,11 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+  },
+
+  webpack: (config) => {
+    // Remove qualquer configuração incorreta relacionada ao React DevTools
+    return config;
   },
 };
 

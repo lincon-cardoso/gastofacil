@@ -1,18 +1,28 @@
 "use client";
 import React, { useState } from "react";
 import styles from "@/app/login/login.module.scss";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+
+// Esquema de validação para o formulário de login
+const loginSchema = z.object({
+  email: z.email("E-mail inválido.").nonempty("O campo e-mail é obrigatório."),
+  password: z
+    .string()
+    .nonempty("O campo senha é obrigatório.")
+    .min(6, "A senha deve ter pelo menos 6 caracteres."),
+});
 
 export default function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -22,14 +32,67 @@ export default function LoginForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implementar lógica de login
-    console.log("Dados do formulário:", formData);
+    setErrors({});
+    setSuccessMessage(null);
+
+    try {
+      // Valida os dados do formulário
+      loginSchema.parse(formData);
+
+      setIsLoading(true);
+
+      // Envia os dados para a API de login
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.errors && typeof result.errors === "object") {
+          setErrors(result.errors);
+        } else if (result.error) {
+          setErrors({ general: result.error });
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false);
+      setSuccessMessage("Login realizado com sucesso!");
+
+      // Redireciona para a página inicial após o login bem-sucedido
+      router.push("/dashboard");
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        err.issues.forEach((issue) => {
+          const key = issue.path[0]?.toString() || "general";
+          if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+        });
+        setErrors(fieldErrors);
+      } else {
+        console.error("Erro inesperado:", err);
+        setErrors({ general: "Erro interno do servidor." });
+      }
+      setIsLoading(false);
+    }
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      {errors.general && <p className={styles.error}>{errors.general}</p>}
+      {successMessage && <p className={styles.success}>{successMessage}</p>}
+
       <div className={styles.inputGroup}>
         <label htmlFor="email">E-mail</label>
         <input
@@ -40,28 +103,22 @@ export default function LoginForm() {
           value={formData.email}
           onChange={handleInputChange}
         />
+        {errors.email && <span className={styles.error}>{errors.email}</span>}
       </div>
 
       <div className={styles.inputGroup}>
         <label htmlFor="password">Senha</label>
-        <div className={styles.passwordWrapper}>
-          <input
-            type={showPassword ? "text" : "password"}
-            id="password"
-            name="password"
-            placeholder="********"
-            value={formData.password}
-            onChange={handleInputChange}
-          />
-          <button
-            type="button"
-            className={styles.togglePassword}
-            onClick={togglePasswordVisibility}
-            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-          >
-            {showPassword ? "🙈" : "👁️"}
-          </button>
-        </div>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="********"
+          value={formData.password}
+          onChange={handleInputChange}
+        />
+        {errors.password && (
+          <span className={styles.error}>{errors.password}</span>
+        )}
       </div>
 
       <div className={styles.options}>
@@ -79,8 +136,12 @@ export default function LoginForm() {
         </a>
       </div>
 
-      <button type="submit" className={styles.submitButton}>
-        Entrar
+      <button
+        type="submit"
+        className={styles.submitButton}
+        disabled={isLoading}
+      >
+        {isLoading ? "Carregando..." : "Entrar"}
       </button>
     </form>
   );

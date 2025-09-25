@@ -58,6 +58,7 @@ export async function POST(request: Request) {
         passwordHash: hashedPassword,
         name,
         planName: defaultPlan.name,
+        role: "USER",
       },
     });
 
@@ -81,5 +82,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-// Este arquivo foi consolidado. O arquivo duplicado em src/api/register/route.ts foi removido.

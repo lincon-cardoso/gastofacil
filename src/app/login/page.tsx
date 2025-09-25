@@ -1,13 +1,7 @@
-"use client";
-
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import React from "react";
+import LoginForm from "./components/LoginForm";
 import styles from "@/app/login/login.module.scss";
-
-const LoginForm = dynamic(() => import("@/hooks/LoginForm"), {
-  ssr: false,
-});
 
 export default function LoginPage() {
   return (
@@ -21,17 +15,13 @@ export default function LoginPage() {
           <p className={styles.subtitle}>
             Acesse sua conta para gerenciar seus gastos.
           </p>
-
           <LoginForm />
-
           <p className={styles.registerLink}>
             Não tem conta? <a href="/register">Crie agora</a>
           </p>
-
           <Link href="/" className={styles.backButton}>
             Voltar para a página inicial
           </Link>
-
           <footer className={styles.footer}>
             <p>
               Protegido por criptografia. Ao continuar você concorda com nossa{" "}

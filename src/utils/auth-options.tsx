@@ -4,8 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import { verifyPassword } from "./hash";
 import { loginSchema } from "./validation";
-
 import { Session, User as NextAuthUser } from "next-auth";
+import type { Role } from "@prisma/client";
 
 interface CustomUser extends NextAuthUser {
   plan?: {
@@ -13,12 +13,10 @@ interface CustomUser extends NextAuthUser {
     name: string;
     price: number;
   };
+  role?: Role;
 }
 
-interface CustomSession extends Session {
-  userId?: string;
-  user?: CustomUser;
-}
+// Session já é augmentado em src/types/next-auth.d.ts para conter userId, role e plan
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -58,6 +56,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.name ?? "",
           email: user.email,
+          role: user.role,
           plan:
             user.plan != null
               ? {
@@ -76,18 +75,19 @@ export const authOptions: NextAuthOptions = {
         const customUser = user as CustomUser;
         token.uid = customUser.id;
         token.plan = customUser.plan; // Adiciona o plano ao token
+        token.role = customUser.role; // adiciona role ao token
       }
       return token;
     },
     async session({ session, token }) {
-      const customSession = session as CustomSession;
-      customSession.userId =
-        typeof token.uid === "string" ? token.uid : undefined;
-      customSession.user = {
+      // popula campos extras na sessão
+      session.userId = typeof token.uid === "string" ? token.uid : undefined;
+      session.user = {
         ...session.user,
-        plan: token.plan, // Adiciona o plano à sessão
+        plan: token.plan,
+        role: token.role,
       } as CustomUser;
-      return customSession;
+      return session as Session;
     },
   },
 };

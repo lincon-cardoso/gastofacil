@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./Header.module.scss";
 import ActionButtons from "@/app/(protect)/dashboard/components/header/Buttons";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,6 +33,11 @@ export default function Header() {
 
   function closeCalendar() {
     setCalendarOpen(false);
+  }
+
+  function handleLogout() {
+    // Lógica de logout usando next-auth
+    signOut({ callbackUrl: "/login" });
   }
 
   return (
@@ -71,6 +77,12 @@ export default function Header() {
                 variant: "outlined",
                 startIcon: "Event",
                 onClick: openCalendar,
+              },
+              {
+                label: "Sair",
+                variant: "outlined",
+                startIcon: "Logout",
+                onClick: handleLogout,
               },
             ]}
           />

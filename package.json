@@ -35,6 +35,7 @@
     "bcryptjs": "^3.0.2",
     "ci": "^2.3.0",
     "cookie": "^1.0.2",
+    "cookies-next": "^6.1.0",
     "critters": "^0.0.23",
     "crypto-js": "^4.2.0",
     "disposable-email-domains": "^1.0.62",
