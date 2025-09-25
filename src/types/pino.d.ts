@@ -11,6 +11,8 @@ declare module "pino" {
 
   interface Logger {
     warn: (obj: Record<string, unknown>, msg: string) => void;
+    info: (msg: string) => void;
+    error: (obj: Record<string, unknown>, msg: string) => void;
   }
 
   function pino(options?: LoggerOptions): Logger;

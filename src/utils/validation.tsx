@@ -78,3 +78,9 @@ export const isDisposableEmail = (email: string): boolean => {
   const domain = email.split("@")[1];
   return disposableEmailDomains.includes(domain);
 };
+
+export const validateEmail = (email: string): boolean => {
+  return (
+    !isDisposableEmail(email) && z.string().email().safeParse(email).success
+  );
+};

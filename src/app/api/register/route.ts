@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/utils/hash";
 import { prisma } from "@/utils/prisma";
-import rateLimit from "@/utils/rateLimit";
 import { registerApiSchema } from "@/utils/validation";
 import { z } from "zod";
 
 export async function POST(request: Request) {
   try {
-    // Rate limit — se excedido retorna resposta imediatamente
-    const rl = await rateLimit(request);
-    if (rl) return rl;
+    // Rate limit removido
 
     let body: unknown;
     try {
@@ -34,11 +31,11 @@ export async function POST(request: Request) {
 
     const { email, password, name } = parsed.data;
 
-    // Verificar existência (mensagem neutra para não vazar existência)
+    // Verificar existência (mensagem específica para e-mail já registrado)
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
-        { errors: { general: "Não foi possível completar o registro." } },
+        { errors: { email: "Este e-mail já está registrado." } },
         { status: 400 }
       );
     }
@@ -84,3 +81,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// Este arquivo foi consolidado. O arquivo duplicado em src/api/register/route.ts foi removido.

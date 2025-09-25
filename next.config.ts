@@ -2,8 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import type { NextConfig } from "next";
+import crypto from "crypto";
 
 const isDev = process.env.APP_ENV === "development";
+
+const generateNonce = () => crypto.randomBytes(16).toString("base64");
 
 const securityHeaders = [
   {
@@ -11,8 +14,8 @@ const securityHeaders = [
     value: [
       "default-src 'self';",
       "base-uri 'self';",
-      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com;",
-      "style-src 'self' 'unsafe-inline';",
+      "script-src 'self' 'nonce-{{nonce}}' https://static.cloudflareinsights.com;",
+      "style-src 'self' 'nonce-{{nonce}}';",
       "img-src 'self' data: https:;",
       "font-src 'self' https: data:;",
       "connect-src 'self' https:;",
@@ -125,10 +128,31 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    const nonce = generateNonce();
     return [
       {
         source: "/:path*",
         headers: [
+          {
+            key: "Cache-Control",
+            value:
+              "public, max-age=0, s-maxage=300, must-revalidate, stale-while-revalidate=60",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              `default-src 'self';`,
+              `script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com;`,
+              `style-src 'self' 'nonce-${nonce}';`,
+              `img-src 'self' data: https:;`,
+              `font-src 'self' https: data:;`,
+              `connect-src 'self' https:;`,
+              `frame-src 'none';`,
+              `object-src 'none';`,
+              `form-action 'self';`,
+              `frame-ancestors 'none';`,
+            ].join(" "),
+          },
           ...(isDev
             ? [
                 {

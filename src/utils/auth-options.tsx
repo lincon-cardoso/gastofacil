@@ -12,8 +12,6 @@ interface CustomUser extends NextAuthUser {
     id: string;
     name: string;
     price: number;
-    description: string;
-    features: string[];
   };
 }
 
@@ -66,8 +64,6 @@ export const authOptions: NextAuthOptions = {
                   id: user.plan.id,
                   name: user.plan.name,
                   price: user.plan.price,
-                  description: user.plan.description,
-                  features: user.plan.features,
                 }
               : undefined,
         };
