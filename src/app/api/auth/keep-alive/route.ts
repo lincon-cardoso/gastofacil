@@ -51,3 +51,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 200 });
   }
 }
+
+// Evita cache e garante execução em toda chamada
+export const dynamic = "force-dynamic";
+export const revalidate = 0;

@@ -51,6 +51,21 @@ export async function POST(req: NextRequest) {
         if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
         const data = (await res.json()) as Array<{ result: number }>;
         cleared = Number(data?.[0]?.result ?? 0) > 0;
+
+        // Fallback: se CAS não removeu (provável jti diferente), faz DEL incondicional
+        if (!cleared) {
+          const resDel = await fetch(`${baseUrl}/pipeline`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${upstashToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify([["DEL", key]]),
+          });
+          if (!resDel.ok) throw new Error(`Upstash HTTP ${resDel.status}`);
+          const dataDel = (await resDel.json()) as Array<{ result: number }>;
+          cleared = Number(dataDel?.[0]?.result ?? 0) > 0;
+        }
       } else {
         // Sem jti, faz DEL incondicional (menos preciso)
         const res = await fetch(`${baseUrl}/pipeline`, {
@@ -80,4 +95,13 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ ok: false }, { status: 500 });
   }
+}
+
+// Garante execução a cada requisição e que cookies sejam considerados
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+// Opcional: trata GET como logout também (idempotente)
+export async function GET(req: NextRequest) {
+  return POST(req);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider, useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import { useEffect, useRef } from "react";
 
 function SessionKeepAlive() {
@@ -41,9 +42,15 @@ function SessionKeepAlive() {
   return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session?: Session | null;
+}) {
   return (
-    <SessionProvider>
+    <SessionProvider session={session}>
       <SessionKeepAlive />
       {children}
     </SessionProvider>

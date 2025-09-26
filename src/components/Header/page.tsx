@@ -4,9 +4,10 @@ import Link from "next/link"; // Importando o componente Link do Next.js
 import styles from "./Header.module.scss";
 import LogoutButton from "./LogoutButton";
 import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const navItems = [
     { href: "/planos", label: "Planos" },
     { href: "/sobre", label: "Sobre" }, // Novo item
@@ -35,23 +36,47 @@ export default function Header() {
           </ul>
         </nav>
         <div className={styles.auth}>
-          {session?.user ? (
-            <>
-              <Link href="/dashboard" className={styles.login}>
-                Dashboard
-              </Link>
-              <LogoutButton className={styles.signup} />
-            </>
-          ) : (
-            <>
-              <Link href="/login" className={styles.login}>
-                Entrar
-              </Link>
-              <Link href="/register" className={styles.signup}>
-                Criar conta
-              </Link>
-            </>
-          )}
+          <AnimatePresence mode="wait">
+            {status === "loading" ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                aria-hidden
+                style={{ width: 160, height: 36 }}
+              />
+            ) : session?.user ? (
+              <motion.div
+                key="logged-in"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Link href="/dashboard" className={styles.login}>
+                  Dashboard
+                </Link>
+                <LogoutButton className={styles.signup} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="logged-out"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Link href="/login" className={styles.login}>
+                  Entrar
+                </Link>
+                <Link href="/register" className={styles.signup}>
+                  Criar conta
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
