@@ -163,6 +163,20 @@
     &:active {
         transform: translateY(1px);
     }
+
+    &:disabled {
+        background-color: #9ca3af;
+        /* Cor mais clara para indicar desativado */
+        cursor: not-allowed;
+        /* Cursor indicando que não é clicável */
+        opacity: 0.6;
+        /* Reduzindo a opacidade para reforçar o estado desativado */
+    }
+
+    &:disabled:active {
+        transform: none;
+        /* Remove o movimento ao clicar */
+    }
 }
 
 .registerLink {

@@ -1,8 +1,12 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link"; // Importando o componente Link do Next.js
 import styles from "./Header.module.scss";
+import LogoutButton from "./LogoutButton";
+import { useSession } from "next-auth/react";
 
 export default function Header() {
+  const { data: session } = useSession();
   const navItems = [
     { href: "/planos", label: "Planos" },
     { href: "/sobre", label: "Sobre" }, // Novo item
@@ -31,12 +35,23 @@ export default function Header() {
           </ul>
         </nav>
         <div className={styles.auth}>
-          <Link href="/login" className={styles.login}>
-            Entrar
-          </Link>
-          <Link href="/register" className={styles.signup}>
-            Criar conta
-          </Link>
+          {session?.user ? (
+            <>
+              <Link href="/dashboard" className={styles.login}>
+                Dashboard
+              </Link>
+              <LogoutButton className={styles.signup} />
+            </>
+          ) : (
+            <>
+              <Link href="/login" className={styles.login}>
+                Entrar
+              </Link>
+              <Link href="/register" className={styles.signup}>
+                Criar conta
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

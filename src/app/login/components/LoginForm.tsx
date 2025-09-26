@@ -13,6 +13,7 @@ export default function LoginForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -34,6 +35,7 @@ export default function LoginForm() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setErrorMsg("");
+    setIsSubmitting(true);
 
     if (rememberMe) {
       localStorage.setItem("rememberedEmail", email);
@@ -50,6 +52,7 @@ export default function LoginForm() {
 
       if (res?.error) {
         setErrorMsg("Credenciais inválidas."); // Mensagem genérica
+        setIsSubmitting(false);
         return;
       }
 
@@ -65,6 +68,8 @@ export default function LoginForm() {
       }
     } catch {
       setErrorMsg("Ocorreu um erro ao tentar entrar. Tente novamente.");
+    } finally {
+      // Removido o reset do estado isSubmitting para manter o botão no estado "Entrando..."
     }
   }
 
@@ -118,8 +123,12 @@ export default function LoginForm() {
           Esqueceu a senha?
         </a>
       </div>
-      <button type="submit" className={styles.submitButton}>
-        Entrar
+      <button
+        type="submit"
+        className={styles.submitButton}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Entrando..." : "Entrar"}
       </button>
       {errorMsg && <p className={styles.errorMessage}>{errorMsg}</p>}
     </form>

@@ -4,41 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./Header.module.scss";
 import ActionButtons from "@/app/(protect)/dashboard/components/header/Buttons";
-import { signOut } from "next-auth/react";
+import {
+  handleAction,
+  closeModal,
+  openFilters,
+  closeFilters,
+  openCalendar,
+  closeCalendar,
+  handleLogout,
+} from "./headerFunctions";
 
 export default function Header() {
   const [modalOpen, setModalOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
-
-  function handleAction() {
-    setModalOpen(true);
-  }
-
-  function closeModal() {
-    setModalOpen(false);
-  }
-
-  function openFilters() {
-    setFiltersOpen(true);
-  }
-
-  function closeFilters() {
-    setFiltersOpen(false);
-  }
-
-  function openCalendar() {
-    setCalendarOpen(true);
-  }
-
-  function closeCalendar() {
-    setCalendarOpen(false);
-  }
-
-  function handleLogout() {
-    // Lógica de logout usando next-auth
-    signOut({ callbackUrl: "/login" });
-  }
 
   return (
     <>
@@ -64,19 +43,19 @@ export default function Header() {
                 label: "Nova transação",
                 variant: "contained",
                 startIcon: "Add",
-                onClick: handleAction,
+                onClick: () => handleAction(setModalOpen),
               },
               {
                 label: "Filtros",
                 variant: "outlined",
                 startIcon: "FilterList",
-                onClick: openFilters,
+                onClick: () => openFilters(setFiltersOpen),
               },
               {
                 label: "Calendario",
                 variant: "outlined",
                 startIcon: "Event",
-                onClick: openCalendar,
+                onClick: () => openCalendar(setCalendarOpen),
               },
               {
                 label: "Sair",
@@ -90,7 +69,10 @@ export default function Header() {
       </header>
 
       {modalOpen && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => closeModal(setModalOpen)}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
@@ -144,7 +126,7 @@ export default function Header() {
                   <button
                     type="button"
                     className={styles.closeButton}
-                    onClick={closeModal}
+                    onClick={() => closeModal(setModalOpen)}
                   >
                     Cancelar
                   </button>
@@ -152,7 +134,10 @@ export default function Header() {
               </form>
             </div>
             <footer className={styles.modalActions}>
-              <button className={styles.closeButton} onClick={closeModal}>
+              <button
+                className={styles.closeButton}
+                onClick={() => closeModal(setModalOpen)}
+              >
                 Fechar
               </button>
             </footer>
@@ -161,7 +146,10 @@ export default function Header() {
       )}
 
       {filtersOpen && (
-        <div className={styles.modalOverlay} onClick={closeFilters}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => closeFilters(setFiltersOpen)}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
@@ -195,7 +183,7 @@ export default function Header() {
                   <button
                     type="button"
                     className={styles.closeButton}
-                    onClick={closeFilters}
+                    onClick={() => closeFilters(setFiltersOpen)}
                   >
                     Cancelar
                   </button>
@@ -207,7 +195,10 @@ export default function Header() {
       )}
 
       {calendarOpen && (
-        <div className={styles.modalOverlay} onClick={closeCalendar}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => closeCalendar(setCalendarOpen)}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
@@ -222,7 +213,10 @@ export default function Header() {
               </p>
             </div>
             <footer className={styles.modalActions}>
-              <button className={styles.closeButton} onClick={closeCalendar}>
+              <button
+                className={styles.closeButton}
+                onClick={() => closeCalendar(setCalendarOpen)}
+              >
                 Fechar
               </button>
             </footer>

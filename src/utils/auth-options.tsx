@@ -2,7 +2,6 @@
 import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
-import { verifyPassword } from "./hash";
 import { loginSchema } from "./validation";
 import { Session, User as NextAuthUser } from "next-auth";
 import type { Role } from "@prisma/client";
@@ -46,6 +45,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const { verifyPassword } = await import("./hash");
         const valid = await verifyPassword(user.passwordHash, password);
         if (!valid) {
           console.error("Senha inválida para o usuário", { email });
@@ -76,6 +76,27 @@ export const authOptions: NextAuthOptions = {
         token.uid = customUser.id;
         token.plan = customUser.plan; // Adiciona o plano ao token
         token.role = customUser.role; // adiciona role ao token
+        // Garante que o token tenha um identificador único (jti) para controle de sessão única
+        if (!token.jti) {
+          try {
+            // Usa Web Crypto randomUUID se disponível
+            if (
+              typeof crypto !== "undefined" &&
+              "randomUUID" in
+                (crypto as unknown as { randomUUID?: () => string })
+            ) {
+              token.jti = (
+                crypto as unknown as { randomUUID: () => string }
+              ).randomUUID();
+            } else {
+              token.jti =
+                Math.random().toString(36).slice(2) + Date.now().toString(36);
+            }
+          } catch {
+            token.jti =
+              Math.random().toString(36).slice(2) + Date.now().toString(36);
+          }
+        }
       }
       return token;
     },

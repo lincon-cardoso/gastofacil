@@ -68,6 +68,20 @@ npm run dev
 
 4. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
 
+### Variáveis de Ambiente (importante)
+
+Adicione/ajuste as seguintes variáveis no arquivo `.env` (já existe na raiz):
+
+- Conexão com banco (já presente): `DATABASE_URL`
+- NextAuth: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- URL pública (usada no middleware para checagem de CSRF): `NEXT_PUBLIC_APP_URL`
+- Upstash Redis (para rate limit distribuído e sessão única):
+  - `UPSTASH_REDIS_REST_URL`
+  - `UPSTASH_REDIS_REST_TOKEN`
+- Endurecimento de CSP (opcional): `SECURITY_CSP_STRICT=true` para ativar modo estrito (sem `'unsafe-inline'`).
+
+Observação: ao ativar CSP estrita, garanta que qualquer script injetado utilize `nonce` compatível.
+
 ---
 
 ## Dependências Principais

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { JWT } from "next-auth/jwt";
-import { setCookie } from "cookies-next"; // Biblioteca para manipular cookies
 
 // Middleware de autenticação e proteção de rotas
 
@@ -34,6 +33,7 @@ async function generateNonce() {
 
 // Função para configurar CSP com suporte a nonce
 function applyCSP(response: NextResponse, nonce: string) {
+  const CSP_STRICT = process.env.SECURITY_CSP_STRICT === "true";
   const CSP_DEV = [
     "default-src 'self'",
     "base-uri 'self'",
@@ -48,12 +48,15 @@ function applyCSP(response: NextResponse, nonce: string) {
     "frame-ancestors 'none'",
   ].join("; ");
 
+  // Em produção, oferecemos dois modos: compatível (unsafe-inline) e estrito (nonce + strict-dynamic)
+  const scriptSrcProd = CSP_STRICT
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://static.cloudflareinsights.com`
+    : `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com 'nonce-${nonce}'`;
+
   const CSP_PROD = [
     "default-src 'self'",
     "base-uri 'self'",
-    // Em produção, habilitamos 'unsafe-inline' para garantir hidratação do Next.js e attach dos eventos.
-    // Opcionalmente, você pode migrar para uso de nonce em todos os scripts gerados e então remover 'unsafe-inline'.
-    `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com 'nonce-${nonce}'`,
+    scriptSrcProd,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self' https: data:",
@@ -184,36 +187,7 @@ async function rateLimit(req: NextRequest): Promise<RateLimitResult> {
   };
 }
 
-// Função para configurar cookies com atributos de segurança
-function setSecureCookie(
-  name: string,
-  value: string,
-  req: NextRequest,
-  res: NextResponse
-) {
-  setCookie(name, value, {
-    req,
-    res,
-    httpOnly: true, // Impede acesso via JavaScript
-    secure: process.env.NODE_ENV === "production", // Apenas HTTPS em produção
-    sameSite: "strict", // Previne envio em requisições cross-site
-    path: "/",
-  });
-}
-
-// Função para regenerar tokens após login
-async function regenerateToken(req: NextRequest, res: NextResponse) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (token) {
-    const newToken = { ...token, iat: Math.floor(Date.now() / 1000) }; // Atualiza o timestamp
-    setSecureCookie(
-      "next-auth.session-token",
-      JSON.stringify(newToken),
-      req,
-      res
-    );
-  }
-}
+// Removido: manipulação manual de cookies/tokens do NextAuth. Confiamos no SDK para gerenciar cookies.
 
 // Função para forçar sessão única por usuário usando Upstash.
 // Retorna true se detectar sessão duplicada.
@@ -250,6 +224,15 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
           `${SESSION_TTL_SECONDS}`,
         ],
         ["GET", sessionKey],
+        // Renova TTL se a sessão existente pertencer ao mesmo jti (usuário ativo)
+        [
+          "EVAL",
+          "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('EXPIRE', KEYS[1], ARGV[2]) else return 0 end",
+          "1",
+          sessionKey,
+          token.jti as string,
+          `${SESSION_TTL_SECONDS}`,
+        ],
       ]),
     });
     if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
@@ -342,7 +325,6 @@ export async function middleware(req: NextRequest) {
       // Usuário autenticado tentando acessar login, redireciona para dashboard
       const response = NextResponse.redirect(new URL("/dashboard", req.url));
       applyCSP(response, nonce);
-      regenerateToken(req, response); // Regenera token após login
       return response;
     }
 
@@ -350,6 +332,18 @@ export async function middleware(req: NextRequest) {
     if (isAuth && token) {
       const duplicate = await enforceSingleSession(token as JWT);
       if (duplicate) {
+        // Em navegações GET, não bloqueia: redireciona para o dashboard (se não estiver nele)
+        // Isso evita falso positivo quando o usuário já está logado e clica em "Entrar"
+        if (req.method === "GET") {
+          if (req.nextUrl.pathname !== "/dashboard") {
+            const res = NextResponse.redirect(new URL("/dashboard", req.url));
+            applyCSP(res, nonce);
+            return res;
+          }
+          // Já estamos no dashboard: segue o fluxo normal
+          return NextResponse.next();
+        }
+        // Para métodos state-changing, mantém a proteção forte
         const res = new NextResponse("Sessão inválida. Faça login novamente.", {
           status: 403,
         });

@@ -1,6 +1,20 @@
-import argon2 from "argon2";
+// Utilitários de hash executados apenas no servidor.
+// Usa import dinâmico para evitar que o bundler inclua dependências nativas no client.
 
-export const hashPassword = (plain: string) => argon2.hash(plain);
+function assertServer() {
+  if (typeof window !== "undefined") {
+    throw new Error("hash utils devem rodar somente no servidor");
+  }
+}
 
-export const verifyPassword = (hash: string, plain: string) =>
-  argon2.verify(hash, plain);
+export async function hashPassword(plain: string) {
+  assertServer();
+  const { default: argon2 } = await import("argon2");
+  return argon2.hash(plain);
+}
+
+export async function verifyPassword(hash: string, plain: string) {
+  assertServer();
+  const { default: argon2 } = await import("argon2");
+  return argon2.verify(hash, plain);
+}
