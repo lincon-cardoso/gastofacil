@@ -22,7 +22,7 @@ export default function Header() {
       <header className={styles.header}>
         <div className={styles.container}>
           <div className={styles.brandContainer}>
-            <Link href="/" className={styles.brandLink}>
+            <Link href="/dashboard" className={styles.brandLink}>
               <div className={styles.logoBackground}>
                 <Image
                   src="/images/img.png"
