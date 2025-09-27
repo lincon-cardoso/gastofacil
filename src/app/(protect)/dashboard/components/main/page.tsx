@@ -6,6 +6,7 @@ import {
 } from "react-icons/go";
 import styles from "@/app/(protect)/dashboard/components/main/Main.module.scss";
 import Card from "./Card";
+import Charts from "./Charts";
 
 export default function Main() {
   return (
@@ -42,9 +43,10 @@ export default function Main() {
           />
         </div>
       </div>
-
-      <div>
-        teste
+      <div className={styles.chartsWrapper}>
+        <div className={styles.chartsContainer}>
+          <Charts />
+        </div>
       </div>
     </main>
   );
