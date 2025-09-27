@@ -5,8 +5,8 @@ import {
   GoCreditCard,
 } from "react-icons/go";
 import styles from "@/app/(protect)/dashboard/components/main/Main.module.scss";
-import Card from "./Card";
-import Charts from "./Charts";
+import Card from "./components/Cards/Card";
+import Charts from "./components/Carts/Charts";
 
 export default function Main() {
   return (

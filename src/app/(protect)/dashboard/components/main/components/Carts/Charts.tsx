@@ -44,7 +44,9 @@ export default function Charts() {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
+            <Tooltip
+              formatter={(value: number) => `R$ ${value.toLocaleString()}`}
+            />
             <Legend />
             <Line
               type="monotone"
@@ -87,7 +89,9 @@ export default function Charts() {
                 />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip
+              formatter={(value: number) => `R$ ${value.toLocaleString()}`}
+            />
             <Legend />
           </PieChart>
         </ResponsiveContainer>
