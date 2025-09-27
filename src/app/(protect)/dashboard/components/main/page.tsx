@@ -8,14 +8,14 @@ export default function Main() {
       <div className={styles.cardGrid}>
         <Card
           title="Saldo Atual"
-          value="R$ 18.240,56"
+          value="R$ 18.240,00"
           description="Disponível"
           icon={<FaArrowUp />}
           className={styles.saldoAtual}
         />
         <Card
           title="Receitas"
-          value="R$ 36.100,00"
+          value="R$ 30.100,00"
           description="Últimos 6 meses"
           icon={<FaArrowUp />}
           className={styles.receitas}
