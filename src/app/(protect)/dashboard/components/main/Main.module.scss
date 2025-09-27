@@ -1,0 +1,54 @@
+.cardGrid {
+    background-color: #000000;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    width: auto;
+    height: 203px;
+    gap: 20px;
+    .card {
+        .cardContent {
+            width: 230px;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #18181b;
+            border-radius: 20px;
+
+            .textContent {
+                height: 140px;
+                width: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+
+                .title {
+                    font-size: 20px;
+                    color: seashell;
+                    text-align: center;
+                }
+
+                .value {
+                    font-size: 30px;
+                    color: seashell;
+                    text-align: center;
+                }
+
+                .description {
+                    font-size: 15px;
+                    color: seashell;
+                    text-align: center;
+                }
+            }
+
+            .icon {
+                height: 120px;
+                font-size: 20px;
+                color: seashell;
+            }
+        }
+    }
+
+}

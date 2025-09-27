@@ -1,4 +1,5 @@
 import Header from "@/app/(protect)/dashboard/components/header/page";
+import Main from "@/app/(protect)/dashboard/components/main/page";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import { redirect } from "next/navigation";
@@ -16,6 +17,7 @@ export default async function DashboardPage() {
   return (
     <main>
       <Header />
+      <Main />
     </main>
   );
 }
