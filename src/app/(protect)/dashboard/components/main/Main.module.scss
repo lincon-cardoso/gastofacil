@@ -1,64 +1,115 @@
-.cardGrid {
-    background-color: #000000;
+.dashboardContainer {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
-    align-items: center;
-    width: 100%; 
-    height: 203px;
-    
+    /* Define layout flexível */
+    flex-direction: column;
+    /* Organiza os itens em coluna */
+    gap: 1rem;
+    /* Borda vermelha */
+    background-color: #000000;
+    /* Fundo preto */
 
-    .card {
+    .cardGrid {
+        background-color: #000000;
+        /* Fundo preto */
         display: flex;
-        flex-direction: column; // Garantir que o conteúdo interno seja organizado verticalmente
+        /* Layout flexível */
+        flex-wrap: wrap;
+        /* Permite quebra de linha */
+        justify-content: space-around;
+        /* Espaçamento uniforme entre os itens */
         align-items: center;
-        
-        .cardContent {
-            width: 230px;
-            height: 140px;
+        /* Alinha itens ao centro */
+        width: 100%;
+        /* Largura total */
+        height: 203px;
+        /* Borda vermelha */
+        max-width: 1200px;
+        /* Largura máxima */
+        margin: 0 auto;
+        /* Centraliza horizontalmente */
+
+        .card {
             display: flex;
-            flex-direction: row; // Alterado para organizar o ícone e texto lado a lado
-            justify-content: space-between; // Espaço entre o ícone e o texto
+            /* Layout flexível */
+            flex-direction: column;
+            /* Organiza itens em coluna */
             align-items: center;
-            background-color: #18181b;
-            border-radius: 20px;
-            padding: 10px; // Adicionado espaçamento interno
+            /* Alinha itens ao centro */
 
-            .icon {
-                font-size: 20px;
-                color: seashell;
-                height: 100%; // Ajustado para ocupar toda a altura do cardContent
+            .cardContent {
+                width: 230px;
+                /* Largura fixa */
+                height: 140px;
+                /* Altura fixa */
                 display: flex;
-                justify-content: center;
-                align-items: center; // Centralizar o ícone
-            }
+                /* Layout flexível */
+                flex-direction: row;
+                /* Organiza itens em linha */
+                justify-content: space-between;
+                /* Espaçamento entre os itens */
+                align-items: center;
+                /* Alinha itens ao centro */
+                background-color: #18181b;
+                /* Fundo cinza escuro */
+                border-radius: 20px;
+                /* Bordas arredondadas */
+                padding: 10px;
+                /* Espaçamento interno */
 
-            .textContent {
-                display: flex;
-                flex-direction: column; // Organizar o texto em coluna
-                justify-content: center;
-                align-items: flex-start; // Alinhar o texto à esquerda
-                gap: 5px; // Espaçamento entre os textos
-                width: calc(100% - 50px); // Ajustar largura para acomodar o ícone
-                height: 100%; // Ajustado para ocupar toda a altura do cardContent
-
-                .title,
-                .value,
-                .description {
-                    font-size: 20px; // Mantido o tamanho original
+                .icon {
+                    font-size: 20px;
+                    /* Tamanho da fonte */
                     color: seashell;
-                    text-align: left; // Alinhar o texto à esquerda
+                    /* Cor do ícone */
+                    height: 100%;
+                    /* Altura total do container */
+                    display: flex;
+                    /* Layout flexível */
+                    justify-content: center;
+                    /* Centraliza horizontalmente */
+                    align-items: center;
+                    /* Centraliza verticalmente */
                 }
 
-                .description {
-                    font-size: 15px; // Mantido o tamanho original
+                .textContent {
+                    display: flex;
+                    /* Layout flexível */
+                    flex-direction: column;
+                    /* Organiza itens em coluna */
+                    justify-content: center;
+                    /* Centraliza verticalmente */
+                    align-items: flex-start;
+                    /* Alinha itens à esquerda */
+                    gap: 5px;
+                    /* Espaçamento entre os itens */
+                    width: calc(100% - 50px);
+                    /* Ajusta largura para acomodar o ícone */
+                    height: 100%;
+                    /* Altura total do container */
+
+                    .title,
+                    .value,
+                    .description {
+                        font-size: 20px;
+                        /* Tamanho da fonte */
+                        color: seashell;
+                        /* Cor do texto */
+                        text-align: left;
+                        /* Alinhar texto à esquerda */
+                    }
+
+                    .description {
+                        font-size: 15px;
+                        /* Tamanho menor para descrição */
+                    }
                 }
 
-            }
-            .icon {
-                font-size: 30px; 
-                color: seashell;
+                .icon {
+                    font-size: 30px;
+                    /* Tamanho maior do ícone */
+                    color: seashell;
+                    /* Cor do ícone */
+                }
             }
         }
     }
