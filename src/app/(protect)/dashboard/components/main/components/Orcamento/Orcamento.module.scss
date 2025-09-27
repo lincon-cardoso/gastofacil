@@ -1,0 +1,143 @@
+.orcamentoContainer {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    align-items: center;
+    padding: 20px;
+    gap: 20px;
+    margin: 0 auto;
+
+    .orcamentos {
+        padding: 20px;
+        background-color: #18181B;
+        border-radius: 10px;
+        flex: 0 0 65%;
+        height: 420px; // Altura fixa
+        color: aliceblue;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .orcamentoCard {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #202024;
+            margin-bottom: 10px;
+
+            .orcamentoInfo {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+
+            .progressBar {
+                height: 10px;
+                background-color: #3f3f46;
+                border-radius: 5px;
+                overflow: hidden;
+                margin-bottom: 10px;
+
+                .progress {
+                    height: 100%;
+                    background-color: #22c55e;
+                    transition: width 0.3s ease;
+                }
+            }
+
+            span {
+                font-size: 0.9rem;
+                color: #a1a1aa;
+            }
+        }
+    }
+
+    .faturas {
+        padding: 20px;
+        background-color: #18181B;
+        border-radius: 10px;
+        flex: 0 0 35%;
+        height: 420px; // Altura fixa
+        color: aliceblue;
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .faturaCard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #202024;
+            margin-bottom: 10px;
+
+            .faturaInfo {
+                display: flex;
+                align-items: center;
+
+                .bancoIcon {
+                    width: 40px;
+                    height: 40px;
+                    background-color: #3b82f6;
+                    color: white;
+                    font-weight: bold;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                }
+
+                div {
+                    display: flex;
+                    flex-direction: column;
+
+                    span:first-child {
+                        font-weight: bold;
+                        color: #e4e4e7;
+                    }
+
+                    span:last-child {
+                        font-size: 0.9rem;
+                        color: #a1a1aa;
+                    }
+                }
+            }
+
+            .faturaValor {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+
+                span {
+                    font-weight: bold;
+                    color: #e4e4e7;
+                    margin-bottom: 5px;
+                }
+
+                button {
+                    padding: 5px 10px;
+                    background-color: #22c55e;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease;
+
+                    &:hover {
+                        background-color: #16a34a;
+                    }
+                }
+            }
+        }
+    }
+}

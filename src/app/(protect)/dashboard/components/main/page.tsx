@@ -6,7 +6,9 @@ import {
 } from "react-icons/go";
 import styles from "@/app/(protect)/dashboard/components/main/Main.module.scss";
 import Card from "./components/Cards/Card";
-import Charts from "./components/Carts/Charts";
+import Charts from "./components/Charts/Charts";
+import Orcamento from "./components/Orcamento/page";
+import Transacoes from "./components/Transacoes/page";
 
 export default function Main() {
   return (
@@ -46,6 +48,8 @@ export default function Main() {
       <div className={styles.chartsWrapper}>
         <div className={styles.chartsContainer}>
           <Charts />
+          <Orcamento />
+          <Transacoes />
         </div>
       </div>
     </main>
