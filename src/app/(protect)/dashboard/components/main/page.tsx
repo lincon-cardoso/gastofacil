@@ -1,4 +1,9 @@
-import { FaArrowUp, FaArrowDown, FaCreditCard } from "react-icons/fa";
+import {
+  GoGraph,
+  GoArrowUpRight,
+  GoArrowDownRight,
+  GoCreditCard,
+} from "react-icons/go";
 import styles from "@/app/(protect)/dashboard/components/main/Main.module.scss";
 import Card from "./Card";
 
@@ -10,28 +15,28 @@ export default function Main() {
           title="Saldo Atual"
           value="R$ 18.240,00"
           description="Disponível"
-          icon={<FaArrowUp />}
+          icon={<GoGraph />}
           className={styles.saldoAtual}
         />
         <Card
           title="Receitas"
           value="R$ 30.100,00"
           description="Últimos 6 meses"
-          icon={<FaArrowUp />}
+          icon={<GoArrowUpRight />}
           className={styles.receitas}
         />
         <Card
           title="Despesas"
           value="R$ 27.300,00"
           description="Últimos 6 meses"
-          icon={<FaArrowDown />}
+          icon={<GoArrowDownRight />}
           className={styles.despesas}
         />
         <Card
           title="Cartões"
           value="R$ 1.980,57"
           description="Próximas faturas"
-          icon={<FaCreditCard />}
+          icon={<GoCreditCard />}
           className={styles.cartoes}
         />
       </div>
