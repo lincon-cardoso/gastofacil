@@ -10,6 +10,7 @@ import Charts from "./components/Charts/Charts";
 import Orcamento from "./components/Orcamento/page";
 import Transacoes from "./components/Transacoes/page";
 import MetasPage from "./components/Metas/page";
+import Footer from "@/app/(protect)/dashboard/components/Footer/page";
 
 export default function Main() {
   return (
@@ -52,6 +53,7 @@ export default function Main() {
           <Orcamento />
           <Transacoes />
           <MetasPage />
+          <Footer />
         </div>
       </div>
     </main>
