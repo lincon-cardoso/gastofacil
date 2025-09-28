@@ -1,0 +1,51 @@
+.container {
+    display: flex; // Define layout flexível para os elementos filhos
+    justify-content: space-around; // Espaçamento uniforme entre os elementos
+    max-width: 1200px; // Largura máxima do container
+    align-items: center; // Alinha os itens verticalmente ao centro
+    padding: 20px; // Espaçamento interno
+    gap: 20px; // Espaçamento entre os elementos filhos
+    margin: 0 auto; // Centraliza o container horizontalmente
+
+    .metaCard {
+        background-color: #121212; // Cor de fundo do cartão
+        border-radius: 15px; // Arredondamento das bordas
+        padding: 20px; // Espaçamento interno do cartão
+        color: #e0e0e0; // Cor do texto
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); // Sombra do cartão
+        width: 100%; // Largura total do cartão
+        max-width: 390px; // Largura máxima do cartão
+
+        h3 {
+            margin: 0; // Remove margens padrão
+            font-size: 1.2rem; // Tamanho da fonte do título
+            margin-bottom: 8px; // Espaçamento inferior do título
+        }
+
+        p {
+            margin: 4px 0; // Margem vertical para o parágrafo
+            font-size: 0.9rem; // Tamanho da fonte do parágrafo
+        }
+
+        .progressBar {
+            background-color: #3f3f46; // Cor de fundo da barra de progresso
+            border-radius: 4px; // Arredondamento das bordas da barra
+            height: 10px; // Altura da barra de progresso
+            overflow: hidden; // Garante que o conteúdo não ultrapasse os limites
+            margin-top: 8px; // Espaçamento superior da barra
+
+            .progress {
+                background-color: #22c55e; // Cor da barra de progresso
+                height: 100%; // Altura total da barra preenchida
+                transition: width 0.3s ease; // Animação suave para largura
+            }
+        }
+
+        .percentage {
+            font-size: 0.9rem; // Tamanho da fonte do texto percentual
+            color: #b0b0b0; // Cor do texto percentual
+            margin-top: 8px; // Espaçamento superior do texto
+            text-align: right; // Alinhamento do texto à direita
+        }
+    }
+}

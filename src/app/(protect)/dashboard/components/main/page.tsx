@@ -9,6 +9,7 @@ import Card from "./components/Cards/Card";
 import Charts from "./components/Charts/Charts";
 import Orcamento from "./components/Orcamento/page";
 import Transacoes from "./components/Transacoes/page";
+import MetasPage from "./components/Metas/page";
 
 export default function Main() {
   return (
@@ -50,6 +51,7 @@ export default function Main() {
           <Charts />
           <Orcamento />
           <Transacoes />
+          <MetasPage />
         </div>
       </div>
     </main>

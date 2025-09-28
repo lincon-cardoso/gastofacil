@@ -5,7 +5,7 @@ import OrcamentoList from "@/components/orcamento/OrcamentoList";
 
 export default function Orcamento() {
   const orcamentos = [
-    { categoria: "Mercado", utilizado: 980, total: 1200 },
+    { categoria: "Mercado", utilizado: 10, total: 1200 },
     { categoria: "Transporte", utilizado: 520, total: 600 },
     { categoria: "Lazer", utilizado: 380, total: 400 },
     
