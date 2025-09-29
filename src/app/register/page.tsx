@@ -1,12 +1,12 @@
 import Footer from "@/components/footer/page";
-import Headers from "@/components/header/page";
+import Header from "@/components/header/Header";
 import styles from "@/app/register/page.module.scss";
 import RegisterForm from "./components/RegisterForm";
 
 export default function RegisterPage() {
   return (
     <>
-      <Headers />
+  <Header />
       <main className={styles.registerPage}>
         <section className={styles.registerInfo}>
           <h1>Crie sua conta</h1>

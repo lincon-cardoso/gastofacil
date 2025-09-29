@@ -1,5 +1,5 @@
 import Footer from "@/components/footer/page";
-import Header from "@/components/header/page";
+import Header from "@/components/header/Header";
 import Image from "next/image";
 import styles from "@/app/contato/contato.module.scss";
 

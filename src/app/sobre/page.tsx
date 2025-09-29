@@ -1,4 +1,4 @@
-import Header from "@/components/header/page";
+import Header from "@/components/header/Header";
 import Footer from "@/components/footer/page";
 import styles from "@/app/sobre/page.module.scss";
 

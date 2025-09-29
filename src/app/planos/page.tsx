@@ -2,7 +2,7 @@
 import { useState } from "react";
 import styles from "@/app/planos/page.module.scss";
 import Footer from "@/components/footer/page";
-import Headers from "@/components/header/page";
+import Header from "@/components/header/Header";
 
 export default function PlanosPage() {
   const [activePlan, setActivePlan] = useState("Anual");
@@ -20,7 +20,7 @@ export default function PlanosPage() {
   };
   return (
     <main>
-      <Headers />
+  <Header />
       <div className={styles.container}>
         <h1 className={styles.title}>Planos simples para qualquer fase</h1>
         <p className={styles.description}>
