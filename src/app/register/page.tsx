@@ -6,7 +6,7 @@ import RegisterForm from "./components/RegisterForm";
 export default function RegisterPage() {
   return (
     <>
-  <Header />
+      <Header />
       <main className={styles.registerPage}>
         <section className={styles.registerInfo}>
           <h1>Crie sua conta</h1>

@@ -20,7 +20,7 @@ export default function PlanosPage() {
   };
   return (
     <main>
-  <Header />
+      <Header />
       <div className={styles.container}>
         <h1 className={styles.title}>Planos simples para qualquer fase</h1>
         <p className={styles.description}>
