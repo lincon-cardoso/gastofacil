@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  // Seed dos planos
   await prisma.plan.upsert({
     where: { name: "Free" },
     update: {

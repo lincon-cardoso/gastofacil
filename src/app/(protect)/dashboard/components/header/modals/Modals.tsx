@@ -6,6 +6,7 @@ import AddCardModal from "./AddCardModal";
 import CreateGoalModal from "./CreateGoalModal";
 import ProfileModal from "./ProfileModal";
 import CreateMonthlyBudgetModal from "./CreateMonthlyBudgetModal";
+import CreateCategoryModal from "./CreateCategoryModal";
 
 type ModalsProps = {
   modalOpen: boolean;
@@ -20,6 +21,8 @@ type ModalsProps = {
   setProfileModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   createMonthlyBudgetOpen?: boolean;
   setCreateMonthlyBudgetOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  createCategoryOpen?: boolean;
+  setCreateCategoryOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function Modals({
@@ -35,6 +38,8 @@ export default function Modals({
   setProfileModalOpen,
   createMonthlyBudgetOpen,
   setCreateMonthlyBudgetOpen,
+  createCategoryOpen,
+  setCreateCategoryOpen,
 }: ModalsProps) {
   return (
     <>
@@ -55,6 +60,10 @@ export default function Modals({
       <ProfileModal
         open={!!profileModalOpen}
         onClose={() => setProfileModalOpen?.(false)}
+      />
+      <CreateCategoryModal
+        open={!!createCategoryOpen}
+        onClose={() => setCreateCategoryOpen?.(false)}
       />
     </>
   );

@@ -2,6 +2,7 @@
 import React from "react";
 import BaseModal from "./BaseModal";
 import styles from "../Modal.module.scss";
+import { useCategories } from "@/hooks/useCategories";
 
 type Props = {
   open: boolean;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function TransactionModal({ open, onClose }: Props) {
+  const { categories, isLoading, error } = useCategories();
   return (
     <BaseModal
       open={open}
@@ -43,12 +45,26 @@ export default function TransactionModal({ open, onClose }: Props) {
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="category">Categoria</label>
-            <select id="category" name="category" required>
-              <option value="">Selecione</option>
-              <option value="alimentacao">Alimentação</option>
-              <option value="transporte">Transporte</option>
-              <option value="lazer">Lazer</option>
-              <option value="outros">Outros</option>
+            <select
+              id="category"
+              name="category"
+              required
+              disabled={isLoading || !!error}
+            >
+              <option value="">
+                {isLoading
+                  ? "Carregando..."
+                  : error
+                    ? "Erro ao carregar"
+                    : "Selecione"}
+              </option>
+              {!isLoading &&
+                !error &&
+                categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
           </div>
           <div className={styles.formGroup}>

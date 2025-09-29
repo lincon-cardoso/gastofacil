@@ -19,6 +19,7 @@ export default function Header() {
   const [createGoalOpen, setCreateGoalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [createMonthlyBudgetOpen, setCreateMonthlyBudgetOpen] = useState(false);
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
 
   return (
     <>
@@ -70,6 +71,7 @@ export default function Header() {
             onCreateGoal={() => setCreateGoalOpen(true)}
             onAddCard={() => setAddCardOpen(true)}
             onCreateMonthlyBudget={() => setCreateMonthlyBudgetOpen(true)}
+            onCreateCategory={() => setCreateCategoryOpen(true)}
           />
         </div>
       </header>
@@ -87,6 +89,8 @@ export default function Header() {
         setProfileModalOpen={setProfileModalOpen}
         createMonthlyBudgetOpen={createMonthlyBudgetOpen}
         setCreateMonthlyBudgetOpen={setCreateMonthlyBudgetOpen}
+        createCategoryOpen={createCategoryOpen}
+        setCreateCategoryOpen={setCreateCategoryOpen}
       />
     </>
   );

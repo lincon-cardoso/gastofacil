@@ -13,29 +13,30 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String?  @db.VarChar(255)
-  email        String   @unique @db.VarChar(255)
-  createdAt    DateTime @default(now())
-  passwordHash String   @db.VarChar(255)
-  updatedAt    DateTime @updatedAt
-  planName     String?  @db.VarChar(255)
-  plan         Plan?    @relation(fields: [planName], references: [name])
-  role         Role     @default(USER)
+  id           String            @id @default(uuid())
+  name         String?           @db.VarChar(255)
+  email        String            @unique @db.VarChar(255)
+  createdAt    DateTime          @default(now())
+  passwordHash String            @db.VarChar(255)
+  updatedAt    DateTime          @updatedAt
+  planName     String?           @db.VarChar(255)
+  plan         Plan?             @relation(fields: [planName], references: [name])
+  role         Role              @default(USER)
   budgets      Budget[]
+  categories   ExpenseCategory[]
 
   @@index([email, createdAt])
 }
 
 model Plan {
-  id             String   @id @default(uuid())
-  name           String   @unique @db.VarChar(255)
-  price          Float
-  description    String?  @db.Text
-  budgetLimit    Int      @default(0) 
-  transactionLimit Int    @default(0) 
-  features       String[]
-  users          User[]
+  id               String   @id @default(uuid())
+  name             String   @unique @db.VarChar(255)
+  price            Float
+  description      String?  @db.Text
+  budgetLimit      Int      @default(0)
+  transactionLimit Int      @default(0)
+  features         String[]
+  users            User[]
 
   @@index([name, price])
 }
@@ -53,9 +54,14 @@ model Budget {
 
 model ExpenseCategory {
   id           String        @id @default(uuid())
-  name         String        @unique @db.VarChar(255)
+  name         String        @db.VarChar(255)
   description  String?       @db.Text
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
+
+  @@unique([userId, name])
+  @@index([userId, name])
 }
 
 model Transaction {

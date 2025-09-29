@@ -3,19 +3,25 @@ import React, { useEffect, useRef, useState } from "react";
 import FlagIcon from "@mui/icons-material/Flag";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import BudgetIcon from "@mui/icons-material/AccountBalanceWallet";
+import CategoryIcon from "@mui/icons-material/Category";
 import styles from "../CreateMenu.module.scss";
 
 type CreateMenuProps = {
   onCreateGoal?: () => void;
   onAddCard?: () => void;
   onCreateMonthlyBudget?: () => void;
+  onCreateCategory?: () => void;
   className?: string;
 };
 
 type MenuItem = {
   id: string;
   label: string;
-  actionKey: "createGoal" | "addCard" | "createMonthlyBudget";
+  actionKey:
+    | "createGoal"
+    | "addCard"
+    | "createMonthlyBudget"
+    | "createCategory";
   icon: React.ReactNode;
 };
 
@@ -38,12 +44,19 @@ const MENU_ITEMS: MenuItem[] = [
     actionKey: "createMonthlyBudget",
     icon: <BudgetIcon fontSize="small" />,
   },
+  {
+    id: "create-category",
+    label: "Categoria",
+    actionKey: "createCategory",
+    icon: <CategoryIcon fontSize="small" />,
+  },
 ];
 
 export default function CreateMenu({
   onCreateGoal,
   onAddCard,
   onCreateMonthlyBudget,
+  onCreateCategory,
 
   className,
 }: CreateMenuProps) {
@@ -120,11 +133,12 @@ export default function CreateMenu({
   };
 
   const handleItemClick = (
-    key: "createGoal" | "addCard" | "createMonthlyBudget"
+    key: "createGoal" | "addCard" | "createMonthlyBudget" | "createCategory"
   ) => {
     if (key === "createGoal") onCreateGoal?.();
     if (key === "addCard") onAddCard?.();
     if (key === "createMonthlyBudget") onCreateMonthlyBudget?.();
+    if (key === "createCategory") onCreateCategory?.();
     closeMenu();
     buttonRef.current?.focus();
   };

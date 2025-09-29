@@ -9,6 +9,7 @@ export default function Orcamento() {
     { categoria: "Transporte", utilizado: 520, total: 600 },
     { categoria: "Lazer", utilizado: 380, total: 400 },
     
+    
   ];
 
   const faturas = [
