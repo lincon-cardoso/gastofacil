@@ -1,5 +1,5 @@
 import Footer from "@/components/footer/page";
-import Header from "@/components/header/Header";
+import Header from "@/components/Header/Header";
 import styles from "@/app/register/page.module.scss";
 import RegisterForm from "./components/RegisterForm";
 
