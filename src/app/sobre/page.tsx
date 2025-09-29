@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "@/components/Header/Header";
 import Footer from "@/components/footer/page";
 import styles from "@/app/sobre/page.module.scss";
