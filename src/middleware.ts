@@ -68,7 +68,7 @@ function applyCSP(response: NextResponse, nonce: string) {
     "frame-ancestors 'none'",
   ].join("; ");
 
-  const csp = process.env.NODE_ENV === "development" ? CSP_DEV : CSP_PROD;
+  const csp = process.env.APP_ENV === "development" ? CSP_DEV : CSP_PROD;
   response.headers.set("Content-Security-Policy", csp);
 }
 
@@ -107,8 +107,14 @@ function applySecurityHeaders(response: NextResponse) {
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minuto
 const RATE_LIMIT_MAX_REQUESTS = 10; // Máximo de 10 requisições por janela
 const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24h para controle de sessão única
-const isProd = process.env.NODE_ENV === "production";
+
+// Usa APP_ENV para lógica customizada, mantém NODE_ENV para Next.js
+const isProd = process.env.APP_ENV === "production";
+const isDev = process.env.APP_ENV === "development";
 let warnedUpstash = false; // evita spam de logs em produção
+
+// Flag para desabilitar sessão única temporariamente (útil para debug)
+const DISABLE_SINGLE_SESSION = process.env.DISABLE_SINGLE_SESSION === "true";
 
 // Fallback em memória (não escalável, útil para dev/local)
 const rateLimitMap: Map<string, number[]> = new Map();
@@ -192,9 +198,29 @@ async function rateLimit(req: NextRequest): Promise<RateLimitResult> {
 // Função para forçar sessão única por usuário usando Upstash.
 // Retorna true se detectar sessão duplicada.
 async function enforceSingleSession(token: JWT): Promise<boolean> {
+  // Permite desabilitar sessão única temporariamente
+  if (DISABLE_SINGLE_SESSION) {
+    if (isDev) {
+      console.log(
+        "[middleware] Sessão única desabilitada via DISABLE_SINGLE_SESSION"
+      );
+    }
+    return false;
+  }
+
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!token?.sub || !token?.jti) return false;
+
+  if (!token?.sub || !token?.jti) {
+    if (isDev) {
+      console.warn("[middleware] Token inválido para sessão única:", {
+        sub: !!token?.sub,
+        jti: !!token?.jti,
+      });
+    }
+    return false;
+  }
+
   if (!upstashUrl || !upstashToken) {
     if (isProd && !warnedUpstash) {
       warnedUpstash = true;
@@ -207,6 +233,15 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
 
   const sessionKey = `session:${token.sub}`;
   try {
+    if (isDev) {
+      console.log(
+        "[middleware] Verificando sessão única para usuário:",
+        token.sub,
+        "jti:",
+        token.jti
+      );
+    }
+
     // Tenta reivindicar a sessão com SET NX. Se já existir, faz GET e compara.
     const res = await fetch(`${upstashUrl.replace(/\/$/, "")}/pipeline`, {
       method: "POST",
@@ -235,19 +270,55 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
         ],
       ]),
     });
-    if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
+    if (!res.ok) {
+      if (isDev) {
+        console.error(
+          "[middleware] Upstash HTTP error:",
+          res.status,
+          res.statusText
+        );
+      }
+      throw new Error(`Upstash HTTP ${res.status}`);
+    }
+
     const data = (await res.json()) as Array<{
       result: string | number | null;
     }>;
+
     const setResult = data?.[0]?.result; // "OK" se conseguiu setar, null se já existia
     const current = data?.[1]?.result as string | null;
-    if (setResult === "OK") return false; // sessão registrada agora
-    // Já existia: se o valor atual for diferente do jti, é sessão duplicada
-    return !!current && current !== token.jti;
-  } catch (e) {
-    if (!isProd) {
-      console.warn("[middleware] Falha ao verificar sessão única:", e);
+
+    if (isDev) {
+      console.log("[middleware] Resultado sessão única:", {
+        setResult,
+        current,
+        jti: token.jti,
+      });
     }
+
+    if (setResult === "OK") {
+      if (isDev) {
+        console.log(
+          "[middleware] Nova sessão registrada para usuário:",
+          token.sub
+        );
+      }
+      return false; // sessão registrada agora
+    }
+
+    // Já existia: se o valor atual for diferente do jti, é sessão duplicada
+    const isDuplicate = !!current && current !== token.jti;
+    if (isDuplicate && isDev) {
+      console.warn("[middleware] Sessão duplicada detectada:", {
+        userId: token.sub,
+        currentJti: current,
+        newJti: token.jti,
+      });
+    }
+
+    return isDuplicate;
+  } catch (e) {
+    console.error("[middleware] Erro ao verificar sessão única:", e);
     // Em caso de falha na verificação, não bloqueia o usuário para evitar falso positivo
     return false;
   }
@@ -354,7 +425,7 @@ export async function middleware(req: NextRequest) {
 
     if ((isProtectedRoute || isAdminRoute) && !isAuth) {
       // Usuário não autenticado tentando acessar rota protegida
-      if (process.env.NODE_ENV === "development") {
+      if (isDev) {
         console.warn(
           "Acesso negado: usuário não autenticado tentando acessar",
           req.nextUrl.pathname
