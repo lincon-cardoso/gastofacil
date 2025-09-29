@@ -102,7 +102,40 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       // popula campos extras na sessão
-      session.userId = typeof token.uid === "string" ? token.uid : undefined;
+      const uid = typeof token.uid === "string" ? token.uid : undefined;
+      session.userId = uid;
+
+      // Busca dados atualizados do usuário no banco para refletir alterações em tempo real (nome, email, plano, role)
+      if (uid) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: uid },
+            include: { plan: true },
+          });
+
+          if (dbUser) {
+            session.user = {
+              ...session.user,
+              name: dbUser.name ?? session.user?.name ?? "",
+              email: dbUser.email ?? session.user?.email ?? undefined,
+              role:
+                dbUser.role ?? (token.role as CustomUser["role"]) ?? undefined,
+              plan: dbUser.plan
+                ? {
+                    id: dbUser.plan.id,
+                    name: dbUser.plan.name,
+                    price: dbUser.plan.price,
+                  }
+                : undefined,
+            } as CustomUser;
+            return session as Session;
+          }
+        } catch {
+          // Se houver erro no acesso ao banco, faz fallback para dados do token
+        }
+      }
+
+      // Fallback caso não consiga buscar do banco
       session.user = {
         ...session.user,
         plan: token.plan,

@@ -19,7 +19,7 @@ export default function Main() {
         <div className={styles.cardGrid}>
           <Card
             title="Saldo Atual"
-            value="R$ 18.240,00"
+            value="R$ 8.240,00"
             description="Disponível"
             icon={<GoGraph />}
             className={styles.saldoAtual}

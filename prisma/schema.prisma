@@ -21,16 +21,50 @@ model User {
   updatedAt    DateTime @updatedAt
   planName     String?  @db.VarChar(255)
   plan         Plan?    @relation(fields: [planName], references: [name])
-  role         Role     @default(USER) // Define o papel do usuário como USER por padrão
+  role         Role     @default(USER)
+  budgets      Budget[]
 
-  @@index([email, createdAt]) // Índice composto para consultas frequentes
+  @@index([email, createdAt])
 }
 
 model Plan {
-  id    String @id @default(uuid())
-  name  String @unique @db.VarChar(255)
-  price Float
-  users User[]
+  id             String   @id @default(uuid())
+  name           String   @unique @db.VarChar(255)
+  price          Float
+  description    String?  @db.Text
+  budgetLimit    Int      @default(0) 
+  transactionLimit Int    @default(0) 
+  features       String[]
+  users          User[]
 
-  @@index([name, price]) // Índice composto para consultas frequentes
+  @@index([name, price])
+}
+
+model Budget {
+  id           String        @id @default(uuid())
+  name         String        @db.VarChar(255)
+  amount       Float
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+model ExpenseCategory {
+  id           String        @id @default(uuid())
+  name         String        @unique @db.VarChar(255)
+  description  String?       @db.Text
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String           @id @default(uuid())
+  description String?          @db.VarChar(255)
+  amount      Float
+  date        DateTime         @default(now())
+  budgetId    String
+  budget      Budget           @relation(fields: [budgetId], references: [id])
+  categoryId  String?
+  category    ExpenseCategory? @relation(fields: [categoryId], references: [id])
 }

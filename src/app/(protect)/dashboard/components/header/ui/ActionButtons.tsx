@@ -2,12 +2,11 @@
 import React from "react";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import EventIcon from "@mui/icons-material/Event";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AddIcon from "@mui/icons-material/Add";
-import styles from "./Header.module.scss";
-
-type IconName = "Event" | "FilterList" | "Add";
+import {
+  resolveIcon,
+  IconName,
+} from "@/app/(protect)/dashboard/components/header/utils/iconResolver";
+import styles from "@/app/(protect)/dashboard/components/header/Header.module.scss";
 
 export type ActionButtonItem = {
   key?: string;
@@ -23,32 +22,17 @@ type ActionButtonsProps = {
   className?: string;
 };
 
-function resolveIcon(icon?: IconName | React.ReactNode) {
-  if (!icon) return undefined;
-  if (typeof icon !== "string") return icon;
-  switch (icon) {
-    case "Event":
-      return <EventIcon />;
-    case "FilterList":
-      return <FilterListIcon />;
-    case "Add":
-      return <AddIcon />;
-    default:
-      return undefined;
-  }
-}
+const defaultItems: ActionButtonItem[] = [
+  { label: "Setembro/2025", variant: "outlined", startIcon: "Event" },
+  { label: "Filtros", variant: "outlined", startIcon: "FilterList" },
+  { label: "Nova transação", variant: "contained", startIcon: "Add" },
+];
 
 export default function ActionButtons({
   items,
   children,
   className,
 }: ActionButtonsProps) {
-  const defaultItems: ActionButtonItem[] = [
-    { label: "Setembro/2025", variant: "outlined", startIcon: "Event" },
-    { label: "Filtros", variant: "outlined", startIcon: "FilterList" },
-    { label: "Nova transação", variant: "contained", startIcon: "Add" },
-  ];
-
   const toRender = children ? undefined : (items ?? defaultItems);
 
   return (
