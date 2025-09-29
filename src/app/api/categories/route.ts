@@ -1,31 +1,37 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import { prisma } from "@/utils/prisma";
+import { extractUserId } from "@/utils/auth";
+import { createCategorySchema } from "@/schemas/category";
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.userId) {
+    const userId = extractUserId(session);
+
+    if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));
-    const rawName: unknown = body?.name ?? body?.categoryName;
-    const description: string | undefined = body?.description ?? undefined;
+    const parsed = createCategorySchema.safeParse({
+      name: body?.name ?? body?.categoryName,
+      description: body?.description,
+    });
 
-    const name = typeof rawName === "string" ? rawName.trim() : "";
-    if (!name) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Nome da categoria é obrigatório" },
+        { error: "Dados inválidos", issues: parsed.error.format() },
         { status: 400 }
       );
     }
 
-    // Impedir duplicidade por usuário
+    const { name, description } = parsed.data;
+
     const existing = await prisma.expenseCategory.findFirst({
-      where: { userId: session.userId, name: name },
-      select: { id: true },
+      where: { userId, name },
     });
     if (existing) {
       return NextResponse.json(
@@ -38,14 +44,26 @@ export async function POST(req: Request) {
       data: {
         name,
         description,
-        userId: session.userId,
+        userId,
       },
       select: { id: true, name: true, description: true },
     });
 
     return NextResponse.json(category, { status: 201 });
-  } catch (err) {
-    console.error("POST /api/categories error", err);
+  } catch (error) {
+    console.error("POST /api/categories error", error);
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          {
+            error: "Categoria com valores duplicados ou conflito de constraint",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     return NextResponse.json(
       { error: "Erro ao criar categoria" },
       { status: 500 }
@@ -56,21 +74,29 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.userId) {
+    const userId = extractUserId(session);
+
+    if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
     const categories = await prisma.expenseCategory.findMany({
-      where: { userId: session.userId },
+      where: { userId },
       orderBy: { name: "asc" },
       select: { id: true, name: true, description: true },
     });
+
     return NextResponse.json(categories);
-  } catch (err) {
-    console.error("GET /api/categories error", err);
+  } catch (error) {
+    console.error("GET /api/categories error", error);
+
     return NextResponse.json(
       { error: "Erro ao listar categorias" },
       { status: 500 }
     );
   }
 }
+
+// Configurações dinâmicas e de runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";

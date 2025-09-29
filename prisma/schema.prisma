@@ -24,6 +24,7 @@ model User {
   role         Role              @default(USER)
   budgets      Budget[]
   categories   ExpenseCategory[]
+  cards        Card[]
 
   @@index([email, createdAt])
 }
@@ -50,6 +51,8 @@ model Budget {
   userId       String
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
+
+  @@unique([userId, name]) // Garantir unicidade por usuário e nome
 }
 
 model ExpenseCategory {
@@ -73,4 +76,16 @@ model Transaction {
   budget      Budget           @relation(fields: [budgetId], references: [id])
   categoryId  String?
   category    ExpenseCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model Card {
+  id     String @id @default(uuid())
+  name   String @db.VarChar(255)
+  number String @db.VarChar(16)
+  limit  Float
+  dueDay Int
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId, name])
 }
