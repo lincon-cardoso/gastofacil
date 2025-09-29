@@ -2,7 +2,7 @@
 import { useState } from "react";
 import styles from "@/app/planos/page.module.scss";
 import Footer from "@/components/footer/page";
-import Header from "@/components/Header/Header"; // Corrigido para case-sensitive no Linux
+import Header from "@/components/header/Header"; // Corrigido para case-sensitive no Linux
 
 export default function PlanosPage() {
   const [activePlan, setActivePlan] = useState("Anual");
