@@ -8,18 +8,18 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
+    <div style={{ padding: "20px", textAlign: "center" }}>
       <h2>Algo deu errado!</h2>
       <p>Erro: {error.message}</p>
-      <button 
+      <button
         onClick={() => reset()}
         style={{
-          padding: '10px 20px',
-          backgroundColor: '#0070f3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
+          padding: "10px 20px",
+          backgroundColor: "#0070f3",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
         }}
       >
         Tentar novamente
