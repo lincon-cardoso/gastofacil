@@ -1,5 +1,5 @@
 import Footer from "@/components/footer/page";
-import Header from "@/components/header/Header";
+import Header from "@/components/Header/Header";
 import Image from "next/image";
 import styles from "@/app/contato/contato.module.scss";
 
@@ -136,3 +136,4 @@ export default function contato() {
     </main>
   );
 }
+
