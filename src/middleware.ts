@@ -113,7 +113,6 @@ function applySecurityHeaders(response: NextResponse) {
 // Configurações
 const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24h para controle de sessão única
 const isDev = process.env.APP_ENV === "development";
-const DISABLE_SINGLE_SESSION = process.env.DISABLE_SINGLE_SESSION === "true";
 
 // Rate limiting usando SDK oficial do Upstash
 async function checkRateLimit(req: NextRequest): Promise<boolean> {
@@ -138,15 +137,6 @@ async function checkRateLimit(req: NextRequest): Promise<boolean> {
 
 // Função para forçar sessão única por usuário usando Upstash Redis
 async function enforceSingleSession(token: JWT): Promise<boolean> {
-  if (DISABLE_SINGLE_SESSION) {
-    if (isDev) {
-      console.log(
-        "[middleware] Sessão única desabilitada via DISABLE_SINGLE_SESSION"
-      );
-    }
-    return false;
-  }
-
   if (!token?.sub || !token?.jti) {
     if (isDev) {
       console.warn("[middleware] Token inválido para sessão única:", {
