@@ -1,28 +1,46 @@
-# gastofacil
+# GastoFácil
 
-Projeto Next.js criado com TypeScript, ESLint, App Router, estrutura em src/ e suporte a Sass.
-
----
-
-## Visão Geral
-
-O **gastofacil** é uma aplicação web desenvolvida com o framework Next.js, projetada para facilitar o gerenciamento de finanças pessoais. Utilizando tecnologias modernas como TypeScript e Sass, o projeto oferece uma interface amigável e responsiva, com foco em boas práticas de desenvolvimento e escalabilidade.
+O **GastoFácil** é uma aplicação web moderna desenvolvida com o framework **Next.js**, projetada para facilitar o gerenciamento de finanças pessoais. Com foco em simplicidade, segurança e escalabilidade, o projeto oferece uma interface amigável e responsiva, além de funcionalidades avançadas para controle financeiro.
 
 ---
 
-## Funcionalidades Principais
+## 🚀 Funcionalidades Principais
 
-- **Gerenciamento de Finanças**: Controle de despesas e receitas.
-- **Interface Responsiva**: Design adaptado para diferentes dispositivos.
-- **Autenticação**: Sistema de login e registro de usuários.
-- **Relatórios Visuais**: Gráficos e relatórios para análise financeira.
-- **Plano de Assinatura**: Diferentes planos para atender às necessidades dos usuários.
+- **Gerenciamento de Finanças**: Controle de despesas, receitas e orçamentos.
+- **Relatórios Visuais**: Gráficos e relatórios detalhados para análise financeira.
+- **Autenticação Segura**: Sistema de login e registro com suporte a sessões únicas.
+- **Planos de Assinatura**: Diferentes planos para atender às necessidades dos usuários.
+- **Interface Responsiva**: Design adaptado para dispositivos móveis e desktops.
+- **Integração Bancária (Beta)**: Sincronização com contas bancárias para maior automação.
 
 ---
 
-## Estrutura do Projeto
+## 🛠️ Tecnologias Utilizadas
 
-A estrutura do projeto segue o padrão recomendado pelo Next.js, com algumas customizações para organização e escalabilidade:
+- **Next.js**: Framework React para aplicações web modernas.
+- **TypeScript**: Superset do JavaScript para tipagem estática.
+- **Sass**: Pré-processador CSS para estilos organizados e reutilizáveis.
+- **Prisma**: ORM para interação com o banco de dados.
+- **NextAuth**: Gerenciamento de autenticação e sessões.
+- **Upstash Redis**: Rate limiting e controle de sessões únicas.
+- **ESLint e Prettier**: Garantia de qualidade e formatação do código.
+
+---
+
+## 🔒 Proteções e Boas Práticas
+
+- **CSP (Content Security Policy)**: Configuração rigorosa para evitar ataques XSS.
+- **Rate Limiting**: Limitação de requisições para evitar abusos.
+- **Sessões Únicas**: Controle de login simultâneo por usuário.
+- **Criptografia**: Dados protegidos em trânsito e em repouso.
+- **LGPD e GDPR Compliance**: Conformidade com regulamentações de proteção de dados.
+- **Middleware de Segurança**: Validação de tokens, cabeçalhos e origens.
+
+---
+
+## 📂 Estrutura do Projeto
+
+A estrutura do projeto segue o padrão recomendado pelo Next.js, com customizações para organização e escalabilidade:
 
 ```
 public/         # Arquivos públicos, como imagens e ícones
@@ -35,16 +53,17 @@ src/            # Código-fonte principal
   styles/       # Estilos globais e específicos
   types/        # Definições de tipos TypeScript
   utils/        # Funções utilitárias
+prisma/         # Configurações e seed do banco de dados
 ```
 
 ---
 
-## Configuração e Instalação
+## ⚙️ Configuração e Instalação
 
 ### Pré-requisitos
 
-- Node.js (versão 18 ou superior)
-- npm (gerenciador de pacotes)
+- **Node.js** (versão 18 ou superior)
+- **npm** (gerenciador de pacotes)
 
 ### Passos para rodar o projeto localmente
 
@@ -60,93 +79,70 @@ git clone https://github.com/lincon-cardoso/gastofacil.git
 npm install
 ```
 
-3. Inicie o servidor de desenvolvimento:
+3. Configure as variáveis de ambiente no arquivo `.env`:
+
+```env
+DATABASE_URL= # URL do banco de dados
+NEXTAUTH_SECRET= # Chave secreta para autenticação
+NEXTAUTH_URL= # URL pública da aplicação
+NEXT_PUBLIC_APP_URL= # URL pública para validações de CSRF
+UPSTASH_REDIS_REST_URL= # URL do Redis para rate limiting
+UPSTASH_REDIS_REST_TOKEN= # Token do Redis
+SECURITY_CSP_STRICT=true # (opcional) Ativa CSP rigorosa
+```
+
+4. Execute o servidor de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-4. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
-
-### Variáveis de Ambiente (importante)
-
-Adicione/ajuste as seguintes variáveis no arquivo `.env` (já existe na raiz):
-
-- Conexão com banco (já presente): `DATABASE_URL`
-- NextAuth: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
-- URL pública (usada no middleware para checagem de CSRF): `NEXT_PUBLIC_APP_URL`
-- Upstash Redis (para rate limit distribuído e sessão única):
-  - `UPSTASH_REDIS_REST_URL`
-  - `UPSTASH_REDIS_REST_TOKEN`
-- Endurecimento de CSP (opcional): `SECURITY_CSP_STRICT=true` para ativar modo estrito (sem `'unsafe-inline'`).
-
-Observação: ao ativar CSP estrita, garanta que qualquer script injetado utilize `nonce` compatível.
+5. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
 
 ---
 
-## Dependências Principais
+## 📜 Scripts Disponíveis
 
-- **Next.js**: Framework React para aplicações web modernas.
-- **TypeScript**: Superset do JavaScript para tipagem estática.
-- **Sass**: Pré-processador CSS para estilos mais organizados.
-- **ESLint**: Ferramenta de linting para manter a qualidade do código.
-- **Prettier**: Formatação automática de código.
-
----
-
-## Padrões e Tecnologias
-
-- **Estrutura Modular**: Código organizado em pastas específicas para facilitar a manutenção.
-- **App Router**: Utilização do novo sistema de roteamento do Next.js.
-- **Sass**: Estilização com suporte a variáveis, mixins e aninhamento.
-- **ESLint e Prettier**: Configurados para garantir consistência no código.
+- `npm run dev` — Inicia o servidor de desenvolvimento.
+- `npm run build` — Gera a build de produção.
+- `npm run start` — Inicia o servidor em produção.
+- `npm run lint` — Executa o linter.
+- `npm run test` — Executa os testes.
+- `npm run test:watch` — Executa os testes em modo watch.
 
 ---
 
-## Scripts Disponíveis
+## 🧪 Testes
 
-- `npm run dev` — inicia o servidor de desenvolvimento
-- `npm run build` — gera a build de produção
-- `npm run start` — inicia o servidor em produção
-- `npm run lint` — executa o linter
-- `npm run test` — executa os testes
-- `npm run test:watch` — executa os testes em modo watch
+O projeto utiliza **Jest** para testes unitários e de integração. Para rodar os testes:
 
----
-
-## Exemplos de Uso
-
-### Adicionando uma Nova Página
-
-1. Crie uma nova pasta dentro de `src/app` com o nome da página.
-2. Adicione um arquivo `page.tsx` com o conteúdo da página.
-
-Exemplo:
-
-```tsx
-export default function NovaPagina() {
-  return <h1>Bem-vindo à nova página!</h1>;
-}
-```
-
-### Criando um Componente Reutilizável
-
-1. Adicione o componente na pasta `src/components`.
-2. Importe e utilize o componente onde necessário.
-
-Exemplo:
-
-```tsx
-import MeuComponente from "@/components/MeuComponente";
-
-export default function Pagina() {
-  return <MeuComponente />;
-}
+```bash
+npm run test
 ```
 
 ---
 
-## Contribuição
+## 🌐 Deploy
+
+O deploy é realizado automaticamente no **Railway**, utilizando as configurações do arquivo `.env`. Para alternar entre ambientes:
+
+### Desenvolvimento Local
+
+```bash
+npm run dev
+```
+
+### Produção Local
+
+```bash
+mv .env.local .env.local.disabled
+npm run dev
+mv .env.local.disabled .env.local
+```
+
+---
+
+## 📋 Contribuição
 
 1. Faça um fork do repositório.
 2. Crie uma branch para sua feature ou correção de bug:
@@ -171,6 +167,6 @@ git push origin minha-feature
 
 ---
 
-## Contato
+## 📞 Contato
 
 Para dúvidas ou sugestões, entre em contato com o mantenedor do projeto através do GitHub: [lincon-cardoso](https://github.com/lincon-cardoso).
