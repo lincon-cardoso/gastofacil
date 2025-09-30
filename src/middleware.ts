@@ -130,7 +130,7 @@ try {
 }
 
 const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL;
-const isDev = process.env.APP_ENV === "development";
+const isDev = process.env.NODE_ENV === "development";
 
 // Inicialização segura do Redis com fallback
 let redis: Redis | null = null;
@@ -661,7 +661,7 @@ function applyIntelligentCaching(
 // Armazena no Redis: {"jti": string, "iat": number}
 // Se token.iat > stored.iat -> atualiza para o novo (derruba o antigo).
 // Se token.iat < stored.iat -> sessão antiga -> bloqueia.
-async function enforceSingleSessionLatestWins(token: JWT): Promise<{
+async function enforceSingleSession(token: JWT): Promise<{
   shouldBlock: boolean;
 }> {
   if (!token?.sub || !token?.jti) {
@@ -685,90 +685,37 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
 
   try {
     const sessionKey = `session:${token.sub}`;
-    const nowIat =
-      typeof token.iat === "number" ? token.iat : Math.floor(Date.now() / 1000);
+    const currentJti = token.jti;
 
-    const storedRaw = await redis.get<string>(sessionKey);
-    let stored: { jti: string; iat: number } | null = null;
+    const storedJti = await redis.get<string>(sessionKey);
 
-    if (storedRaw) {
-      try {
-        stored = JSON.parse(storedRaw) as { jti: string; iat: number };
-      } catch {
-        // Valor legado (apenas jti). Trate como iat antigo = 0.
-        stored = { jti: storedRaw as unknown as string, iat: 0 };
-      }
-    }
-
-    if (!stored) {
+    if (!storedJti) {
       // Primeira sessão registrada
-      await redis.set(
-        sessionKey,
-        JSON.stringify({ jti: token.jti, iat: nowIat }),
-        {
-          ex: MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS,
-        }
-      );
-      if (isDev)
-        console.log(`✅ Nova sessão registrada (latest wins): ${token.sub}`);
+      await redis.set(sessionKey, currentJti, {
+        ex: MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS,
+      });
+      if (isDev) console.log(`✅ Nova sessão registrada: ${token.sub}`);
       return { shouldBlock: false };
     }
 
-    if (stored.jti === token.jti) {
+    if (storedJti === currentJti) {
       // Mesma sessão vigente: renova TTL
       await redis.expire(sessionKey, MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS);
       return { shouldBlock: false };
     }
 
-    // Sessões diferentes
-    if (nowIat > (stored.iat ?? 0)) {
-      // ESTE request é o login mais novo -> assume controle
-      await redis.set(
-        sessionKey,
-        JSON.stringify({ jti: token.jti, iat: nowIat }),
-        {
-          ex: MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS,
-        }
-      );
-      if (isDev) {
-        console.warn("⚠️ Rotação de sessão (latest wins):", {
-          user: token.sub,
-          old: stored,
-          new: { jti: token.jti, iat: nowIat },
-        });
-      }
-      return { shouldBlock: false }; // deixa passar (novo login válido)
-    }
-
-    // ESTE request é mais velho que o armazenado -> bloquear (derrubado)
+    // Sessão diferente - bloqueia a sessão atual (mantém a primeira ativa)
     if (isDev) {
-      console.warn("🚫 Sessão antiga bloqueada (latest wins):", {
+      console.warn("🚫 Sessão duplicada bloqueada:", {
         user: token.sub,
-        stored,
-        current: { jti: token.jti, iat: nowIat },
+        stored: storedJti,
+        current: currentJti,
       });
-    }
-
-    // Limpa dados do usuário quando sessão é invalidada
-    try {
-      const cleanupResult = await clearUserUpstashData(token.sub);
-      if (isDev && cleanupResult.success) {
-        console.log(`🧹 Dados limpos para sessão invalidada: ${token.sub}`, {
-          clearedKeys: cleanupResult.clearedKeys.length,
-        });
-      }
-    } catch (cleanupError) {
-      if (isDev) {
-        console.warn(
-          `⚠️ Falha na limpeza de dados para ${token.sub}:`,
-          cleanupError
-        );
-      }
     }
 
     return { shouldBlock: true };
   } catch (error) {
-    console.error("❌ Erro ao verificar sessão única (latest wins):", error);
+    console.error("❌ Erro ao verificar sessão única:", error);
     return { shouldBlock: false }; // em falha, não bloqueia
   }
 }
@@ -922,7 +869,7 @@ export async function middleware(req: NextRequest) {
         if (config.sessionMode === "multi") {
           await enforceMultiDeviceLimit(token as JWT, req);
         } else {
-          await enforceSingleSessionLatestWins(token as JWT);
+          await enforceSingleSession(token as JWT);
         }
         const response = NextResponse.redirect(new URL("/dashboard", req.url));
         applyCSP(response, nonce);
@@ -979,9 +926,7 @@ export async function middleware(req: NextRequest) {
           return response;
         }
       } else {
-        const { shouldBlock } = await enforceSingleSessionLatestWins(
-          token as JWT
-        );
+        const { shouldBlock } = await enforceSingleSession(token as JWT);
         if (shouldBlock) {
           const response = NextResponse.redirect(new URL("/login", req.url));
           // limpa cookies da sessão antiga
@@ -1101,39 +1046,122 @@ export async function clearUserUpstashData(userId: string): Promise<{
   const clearedKeys: string[] = [];
 
   try {
-    // Lista de padrões de chaves relacionadas ao usuário
-    const keyPatterns = [
+    // Lista de chaves específicas relacionadas ao usuário
+    const specificKeys = [
       `session:${userId}`, // Sessão única
       `user_sessions:${userId}`, // Sessões multi-device
       `security:ips:${userId}`, // IPs de segurança
       `security:ua:${userId}`, // User-agents
       `metrics:user:${userId}`, // Métricas do usuário
       `rate_limit:${userId}`, // Rate limiting específico
-      `anomaly:${userId}:*`, // Detecções de anomalia
-      `cache:user:${userId}:*`, // Cache específico do usuário
     ];
 
-    // Remove cada padrão de chave
-    for (const pattern of keyPatterns) {
+    // Lista de prefixos para buscar chaves com padrões
+    const prefixPatterns = [
+      `anomaly:${userId}:`, // Detecções de anomalia
+      `cache:user:${userId}:`, // Cache específico do usuário
+      `ratelimit:${userId}:`, // Rate limiting com dois pontos
+      `security:${userId}:`, // Prefixo de segurança genérico
+      `metrics:${userId}:`, // Métricas com dois pontos
+    ];
+
+    // Remove chaves específicas
+    for (const key of specificKeys) {
       try {
-        if (pattern.includes("*")) {
-          // Para padrões com wildcard, usa SCAN
-          const keys = await redis.keys(pattern);
-          if (keys.length > 0) {
-            await redis.del(...keys);
-            clearedKeys.push(...keys);
-          }
-        } else {
-          // Para chaves específicas, remove diretamente
-          const result = await redis.del(pattern);
-          if (result > 0) {
-            clearedKeys.push(pattern);
-          }
+        const result = await redis.del(key);
+        if (result > 0) {
+          clearedKeys.push(key);
         }
       } catch (keyError) {
         if (isDev) {
-          console.warn(`⚠️ Erro ao limpar padrão ${pattern}:`, keyError);
+          console.warn(`⚠️ Erro ao limpar chave ${key}:`, keyError);
         }
+      }
+    }
+
+    // Para prefixos, usa SCAN para encontrar chaves relacionadas
+    for (const prefix of prefixPatterns) {
+      try {
+        // Usa SCAN para encontrar chaves com o prefixo
+        let cursor = "0";
+        let iterations = 0;
+        const maxIterations = 100; // Evita loops infinitos
+
+        do {
+          const scanResult = await redis.scan(cursor, {
+            match: `${prefix}*`,
+            count: 100,
+          });
+
+          iterations++;
+
+          if (Array.isArray(scanResult) && scanResult.length >= 2) {
+            cursor = String(scanResult[0]);
+            const keys = scanResult[1] as string[];
+
+            if (keys.length > 0) {
+              // Remove chaves em lotes menores para melhor compatibilidade
+              const deleteResult = await redis.del(...keys);
+              if (deleteResult > 0) {
+                clearedKeys.push(...keys);
+              }
+            }
+          } else {
+            break;
+          }
+        } while (cursor !== "0" && iterations < maxIterations);
+
+        if (iterations >= maxIterations) {
+          console.warn(`⚠️ Atingiu máximo de iterações para prefixo ${prefix}`);
+        }
+      } catch (scanError) {
+        if (isDev) {
+          console.warn(`⚠️ Erro ao escanear prefixo ${prefix}:`, scanError);
+        }
+      }
+    }
+
+    // Verificação adicional: tenta buscar qualquer chave que contenha o userId
+    try {
+      let cursor = "0";
+      let iterations = 0;
+      const maxIterations = 100;
+
+      do {
+        const scanResult = await redis.scan(cursor, {
+          match: `*${userId}*`,
+          count: 100,
+        });
+
+        iterations++;
+
+        if (Array.isArray(scanResult) && scanResult.length >= 2) {
+          cursor = String(scanResult[0]);
+          const keys = scanResult[1] as string[];
+
+          if (keys.length > 0) {
+            // Filtra apenas chaves que realmente pertencem ao usuário
+            const userKeys = keys.filter(
+              (key) => key.includes(`${userId}`) && !clearedKeys.includes(key) // Evita duplicatas
+            );
+
+            if (userKeys.length > 0) {
+              const deleteResult = await redis.del(...userKeys);
+              if (deleteResult > 0) {
+                clearedKeys.push(...userKeys);
+              }
+            }
+          }
+        } else {
+          break;
+        }
+      } while (cursor !== "0" && iterations < maxIterations);
+    } catch (generalScanError) {
+      if (isDev) {
+        console.warn(
+          `⚠️ Erro na verificação geral de chaves para ${userId}:`,
+          generalScanError
+        );
       }
     }
 
@@ -1182,6 +1210,6 @@ export async function checkUpstashHealth(): Promise<{
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap.*\\.xml|assets/|images/|favicons/|publico|api/auth).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap.*\\.xml|assets/|images/|favicons/|api/auth/providers|api/auth/session|api/auth/csrf).*)",
   ],
 };
