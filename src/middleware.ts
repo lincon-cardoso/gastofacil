@@ -748,6 +748,24 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
         current: { jti: token.jti, iat: nowIat },
       });
     }
+
+    // Limpa dados do usuário quando sessão é invalidada
+    try {
+      const cleanupResult = await clearUserUpstashData(token.sub);
+      if (isDev && cleanupResult.success) {
+        console.log(`🧹 Dados limpos para sessão invalidada: ${token.sub}`, {
+          clearedKeys: cleanupResult.clearedKeys.length,
+        });
+      }
+    } catch (cleanupError) {
+      if (isDev) {
+        console.warn(
+          `⚠️ Falha na limpeza de dados para ${token.sub}:`,
+          cleanupError
+        );
+      }
+    }
+
     return { shouldBlock: true };
   } catch (error) {
     console.error("❌ Erro ao verificar sessão única (latest wins):", error);
@@ -941,6 +959,19 @@ export async function middleware(req: NextRequest) {
             expires: new Date(0),
             path: "/",
           });
+
+          // Limpa dados do usuário do Upstash em background
+          if (token?.sub) {
+            clearUserUpstashData(token.sub).catch((cleanupError) => {
+              if (isDev) {
+                console.warn(
+                  `⚠️ Falha na limpeza automática para ${token.sub}:`,
+                  cleanupError
+                );
+              }
+            });
+          }
+
           applyCSP(response, nonce);
           if (config.metricsEnabled) {
             collectDetailedMetrics(req, 302, startTime);
@@ -962,6 +993,19 @@ export async function middleware(req: NextRequest) {
             expires: new Date(0),
             path: "/",
           });
+
+          // Limpa dados do usuário do Upstash em background
+          if (token?.sub) {
+            clearUserUpstashData(token.sub).catch((cleanupError) => {
+              if (isDev) {
+                console.warn(
+                  `⚠️ Falha na limpeza automática para ${token.sub}:`,
+                  cleanupError
+                );
+              }
+            });
+          }
+
           applyCSP(response, nonce);
           if (config.metricsEnabled) {
             collectDetailedMetrics(req, 302, startTime);
@@ -1037,6 +1081,79 @@ export async function middleware(req: NextRequest) {
     }
 
     return response;
+  }
+}
+
+// === FUNÇÃO DE LIMPEZA COMPLETA DO UPSTASH ===
+export async function clearUserUpstashData(userId: string): Promise<{
+  success: boolean;
+  clearedKeys: string[];
+  error?: string;
+}> {
+  if (!redis) {
+    return {
+      success: false,
+      clearedKeys: [],
+      error: "Redis não inicializado",
+    };
+  }
+
+  const clearedKeys: string[] = [];
+
+  try {
+    // Lista de padrões de chaves relacionadas ao usuário
+    const keyPatterns = [
+      `session:${userId}`, // Sessão única
+      `user_sessions:${userId}`, // Sessões multi-device
+      `security:ips:${userId}`, // IPs de segurança
+      `security:ua:${userId}`, // User-agents
+      `metrics:user:${userId}`, // Métricas do usuário
+      `rate_limit:${userId}`, // Rate limiting específico
+      `anomaly:${userId}:*`, // Detecções de anomalia
+      `cache:user:${userId}:*`, // Cache específico do usuário
+    ];
+
+    // Remove cada padrão de chave
+    for (const pattern of keyPatterns) {
+      try {
+        if (pattern.includes("*")) {
+          // Para padrões com wildcard, usa SCAN
+          const keys = await redis.keys(pattern);
+          if (keys.length > 0) {
+            await redis.del(...keys);
+            clearedKeys.push(...keys);
+          }
+        } else {
+          // Para chaves específicas, remove diretamente
+          const result = await redis.del(pattern);
+          if (result > 0) {
+            clearedKeys.push(pattern);
+          }
+        }
+      } catch (keyError) {
+        if (isDev) {
+          console.warn(`⚠️ Erro ao limpar padrão ${pattern}:`, keyError);
+        }
+      }
+    }
+
+    if (isDev) {
+      console.log(
+        `✅ Dados do usuário ${userId} limpos do Upstash:`,
+        clearedKeys
+      );
+    }
+
+    return { success: true, clearedKeys };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    console.error(`❌ Erro ao limpar dados do usuário ${userId}:`, error);
+    return {
+      success: false,
+      clearedKeys,
+      error: errorMessage,
+    };
   }
 }
 
