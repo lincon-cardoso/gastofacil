@@ -20,7 +20,12 @@
     "test:api": "node scripts/test-api.js",
     "test:auto-deploy": "node scripts/test-auto-deploy.js",
     "deploy:setup": "echo '🔧 Configure as variáveis de ambiente primeiro!' && echo 'Copie .env.example para .env e configure os tokens'",
-    "seed": "ts-node --esm scripts/seed.ts"
+    "seed": "ts-node --esm scripts/seed.ts",
+    "middleware:init": "npx tsx scripts/init-middleware-config.ts init",
+    "middleware:config": "npx tsx scripts/init-middleware-config.ts show",
+    "middleware:reset": "npx tsx scripts/init-middleware-config.ts reset",
+    "middleware:test": "npx tsx scripts/test-middleware-config.ts",
+    "security:check": "npx tsx scripts/security-check.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -42,7 +47,7 @@
     "crypto-js": "^4.2.0",
     "disposable-email-domains": "^1.0.62",
     "dompurify": "^3.2.6",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.3",
     "fix": "^0.0.3",
     "framer-motion": "^12.23.22",
     "helmet": "^8.1.0",

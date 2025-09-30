@@ -32,6 +32,17 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env
+.env.local
+.env.development
+.env.production
+
+# Prisma
+prisma/migrations/migration_lock.toml
+
+# Scripts de configuração sensíveis (se contiverem tokens)
+scripts/config-secrets.ts
+scripts/production-keys.ts
 
 # vercel
 .vercel
