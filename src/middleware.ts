@@ -4,14 +4,171 @@ import type { JWT } from "next-auth/jwt";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL;
+// === CONFIGURAÇÕES CENTRALIZADAS ===
+const MIDDLEWARE_CONFIG = {
+  // === CONFIGURAÇÕES DE SESSÃO ===
+  SESSION_TTL_SECONDS: 60 * 60 * 24, // 24 horas (86400 segundos)
+  MAX_DEVICES: 3, // Máximo de dispositivos simultâneos no modo multi-device
 
-const redis = Redis.fromEnv();
-const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "60 s"),
-  analytics: true,
-});
+  // === RATE LIMITING ===
+  RATE_LIMIT: {
+    requests: 10, // Número de requests
+    window: "60 s", // Janela de tempo (formato Upstash)
+    analytics: true, // Habilitar analytics
+  },
+
+  // === DETECÇÃO DE ANOMALIAS ===
+  ANOMALY_DETECTION: {
+    maxUniqueIPs: 3, // Máximo de IPs únicos em 30 minutos
+    ipTrackingWindow: 1800, // 30 minutos em segundos
+    userAgentSimilarityThreshold: 0.6, // 60% de similaridade mínima
+    userAgentCacheTime: 86400, // 24 horas
+  },
+
+  // === MÉTRICAS ===
+  METRICS: {
+    errorRequestsLimit: 999, // Máximo de requests de erro armazenados
+    slowRequestThreshold: 5000, // Requests acima de 5s são considerados lentos
+    metricsRetention: 172800, // 48 horas de retenção
+  },
+
+  // === CACHE HEADERS ===
+  CACHE_HEADERS: {
+    staticAssets: "public, max-age=31536000, immutable", // 1 ano para assets
+    privatePages: "private, no-cache, must-revalidate",
+    publicPages: "public, s-maxage=3600, stale-while-revalidate=86400", // 1h + 24h stale
+    apiRoutes: "private, max-age=300, stale-while-revalidate=60", // 5min + 1min stale
+    sensitiveApi: "private, no-cache, no-store, must-revalidate",
+  },
+
+  // === SECURITY HEADERS ===
+  SECURITY: {
+    frameOptions: "DENY",
+    hstsMaxAge: "max-age=31536000; includeSubDomains", // 1 ano
+    contentTypeOptions: "nosniff",
+    referrerPolicy: "strict-origin-when-cross-origin",
+    coopPolicy: "same-origin",
+    corpPolicy: "same-origin",
+  },
+
+  // === CSP (Content Security Policy) ===
+  CSP: {
+    // Domínios confiáveis que podem ser adicionados conforme necessário
+    trustedDomains: {
+      scripts: ["https://static.cloudflareinsights.com"],
+      styles: [],
+      images: ["data:", "https:"],
+      fonts: ["https:", "data:"],
+      connect: ["https:", "ws:", "wss:"],
+    },
+  },
+
+  // === MANUTENÇÃO ===
+  MAINTENANCE: {
+    retryAfter: "300", // 5 minutos
+    excludePaths: ["/admin"], // Rotas que não são afetadas pela manutenção
+  },
+} as const;
+
+// === CONFIGURAÇÕES DINÂMICAS PADRÃO ===
+const DEFAULT_DYNAMIC_CONFIG = {
+  sessionMode: "single" as const,
+  anomalyDetection: true,
+  metricsEnabled: true,
+  maintenanceMode: false,
+};
+
+// === ROTAS E PADRÕES ===
+const ROUTE_PATTERNS = {
+  // Assets estáticos
+  staticAssets: /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf)$/,
+
+  // Rotas protegidas
+  protected: ["/dashboard"],
+  admin: ["/admin"],
+  auth: ["/login", "/register"],
+
+  // Rotas públicas que podem ser cached
+  publicCacheable: ["/", "/sobre", "/contato", "/planos"],
+
+  // APIs sensíveis (nunca cached)
+  sensitiveApi: ["/api/user/", "/api/auth/"],
+};
+
+// === VALIDAÇÃO DE CONFIGURAÇÃO ===
+function validateConfig(config: typeof MIDDLEWARE_CONFIG) {
+  const errors: string[] = [];
+
+  if (config.SESSION_TTL_SECONDS < 300) {
+    errors.push("SESSION_TTL_SECONDS deve ser pelo menos 5 minutos (300s)");
+  }
+
+  if (config.MAX_DEVICES < 1 || config.MAX_DEVICES > 10) {
+    errors.push("MAX_DEVICES deve estar entre 1 e 10");
+  }
+
+  if (config.RATE_LIMIT.requests < 1) {
+    errors.push("RATE_LIMIT.requests deve ser pelo menos 1");
+  }
+
+  if (config.ANOMALY_DETECTION.maxUniqueIPs < 1) {
+    errors.push("ANOMALY_DETECTION.maxUniqueIPs deve ser pelo menos 1");
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Configuração inválida:\n${errors.join("\n")}`);
+  }
+
+  return true;
+}
+
+// Validar configuração na inicialização
+try {
+  validateConfig(MIDDLEWARE_CONFIG);
+} catch (error) {
+  console.error("Erro na configuração do middleware:", error);
+}
+
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL;
+const isDev = process.env.APP_ENV === "development";
+
+// Inicialização segura do Redis com fallback
+let redis: Redis | null = null;
+let ratelimit: Ratelimit | null = null;
+
+try {
+  if (
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
+    redis = Redis.fromEnv();
+    ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(
+        MIDDLEWARE_CONFIG.RATE_LIMIT.requests,
+        MIDDLEWARE_CONFIG.RATE_LIMIT.window
+      ),
+      analytics: MIDDLEWARE_CONFIG.RATE_LIMIT.analytics,
+    });
+    if (isDev) console.log("✅ Redis/Upstash inicializado com sucesso");
+
+    // Teste de conectividade inicial
+    if (isDev) {
+      redis
+        .ping()
+        .then(() => console.log("✅ Conectividade Upstash verificada"))
+        .catch((error) =>
+          console.warn("⚠️ Erro no teste de conectividade Upstash:", error)
+        );
+    }
+  } else {
+    console.warn(
+      "⚠️ Credenciais do Upstash não encontradas - Redis desabilitado"
+    );
+  }
+} catch (error) {
+  console.error("❌ Erro ao inicializar Redis/Upstash:", error);
+}
 
 async function generateNonce() {
   if (
@@ -35,14 +192,19 @@ async function generateNonce() {
 
 function applyCSP(response: NextResponse, nonce: string) {
   const CSP_STRICT = process.env.SECURITY_CSP_STRICT === "true";
+  const trustedScripts = MIDDLEWARE_CONFIG.CSP.trustedDomains.scripts.join(" ");
+  const trustedImages = MIDDLEWARE_CONFIG.CSP.trustedDomains.images.join(" ");
+  const trustedFonts = MIDDLEWARE_CONFIG.CSP.trustedDomains.fonts.join(" ");
+  const trustedConnect = MIDDLEWARE_CONFIG.CSP.trustedDomains.connect.join(" ");
+
   const CSP_DEV = [
     "default-src 'self'",
     "base-uri 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com 'nonce-${nonce}'`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${trustedScripts} 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' https: data:",
-    "connect-src 'self' https: ws: wss:",
+    `img-src 'self' ${trustedImages}`,
+    `font-src 'self' ${trustedFonts}`,
+    `connect-src 'self' ${trustedConnect}`,
     "frame-src 'none'",
     "object-src 'none'",
     "form-action 'self'",
@@ -50,35 +212,44 @@ function applyCSP(response: NextResponse, nonce: string) {
   ].join("; ");
 
   const scriptSrcProd = CSP_STRICT
-    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://static.cloudflareinsights.com`
-    : `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com 'nonce-${nonce}'`;
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${trustedScripts}`
+    : `script-src 'self' 'unsafe-inline' ${trustedScripts} 'nonce-${nonce}'`;
 
   const CSP_PROD = [
     "default-src 'self'",
     "base-uri 'self'",
     scriptSrcProd,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' https: data:",
-    "connect-src 'self' https: ws: wss:",
+    `img-src 'self' ${trustedImages}`,
+    `font-src 'self' ${trustedFonts}`,
+    `connect-src 'self' ${trustedConnect}`,
     "frame-src 'none'",
     "object-src 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'",
   ].join("; ");
 
-  const csp = process.env.APP_ENV === "development" ? CSP_DEV : CSP_PROD;
+  const csp = isDev ? CSP_DEV : CSP_PROD;
   response.headers.set("Content-Security-Policy", csp);
 }
 
 function applySecurityHeaders(response: NextResponse) {
-  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set(
+    "X-Frame-Options",
+    MIDDLEWARE_CONFIG.SECURITY.frameOptions
+  );
   response.headers.set(
     "Strict-Transport-Security",
-    "max-age=31536000; includeSubDomains"
+    MIDDLEWARE_CONFIG.SECURITY.hstsMaxAge
   );
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "X-Content-Type-Options",
+    MIDDLEWARE_CONFIG.SECURITY.contentTypeOptions
+  );
+  response.headers.set(
+    "Referrer-Policy",
+    MIDDLEWARE_CONFIG.SECURITY.referrerPolicy
+  );
   response.headers.set(
     "Permissions-Policy",
     [
@@ -95,12 +266,15 @@ function applySecurityHeaders(response: NextResponse) {
       "clipboard-write=()",
     ].join(", ")
   );
-  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  response.headers.set(
+    "Cross-Origin-Opener-Policy",
+    MIDDLEWARE_CONFIG.SECURITY.coopPolicy
+  );
+  response.headers.set(
+    "Cross-Origin-Resource-Policy",
+    MIDDLEWARE_CONFIG.SECURITY.corpPolicy
+  );
 }
-
-const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24h
-const isDev = process.env.APP_ENV === "development";
 
 // === CONFIGURAÇÃO DINÂMICA ===
 interface MiddlewareConfig {
@@ -111,6 +285,13 @@ interface MiddlewareConfig {
 }
 
 async function getConfig(): Promise<MiddlewareConfig> {
+  // Se o Redis não está disponível, retorna configuração padrão
+  if (!redis) {
+    if (isDev)
+      console.warn("⚠️ Redis indisponível - usando configuração padrão");
+    return DEFAULT_DYNAMIC_CONFIG;
+  }
+
   try {
     const config = await redis.get("middleware:config");
     if (config) {
@@ -124,29 +305,29 @@ async function getConfig(): Promise<MiddlewareConfig> {
       }
     }
   } catch (error) {
-    if (isDev) console.warn("Falha ao carregar config, usando padrão:", error);
+    if (isDev)
+      console.warn(
+        "⚠️ Falha ao carregar config do Redis, usando padrão:",
+        error
+      );
 
     // Se houve erro, tenta recriar a configuração padrão
     try {
-      const defaultConfig = {
-        sessionMode: "single",
-        anomalyDetection: true,
-        metricsEnabled: true,
-        maintenanceMode: false,
-      };
-      await redis.set("middleware:config", JSON.stringify(defaultConfig));
-      if (isDev) console.log("Configuração padrão recriada no Redis");
+      await redis.set(
+        "middleware:config",
+        JSON.stringify(DEFAULT_DYNAMIC_CONFIG)
+      );
+      if (isDev) console.log("✅ Configuração padrão recriada no Redis");
     } catch (recreateError) {
-      if (isDev) console.warn("Erro ao recriar configuração:", recreateError);
+      if (isDev)
+        console.warn(
+          "❌ Erro ao recriar configuração no Redis:",
+          recreateError
+        );
     }
   }
 
-  return {
-    sessionMode: "single",
-    anomalyDetection: true,
-    metricsEnabled: true,
-    maintenanceMode: false,
-  };
+  return DEFAULT_DYNAMIC_CONFIG;
 }
 
 // === UTILITÁRIOS ===
@@ -186,6 +367,11 @@ async function detectSecurityAnomalies(
   req: NextRequest,
   token: JWT
 ): Promise<SecurityAnomaly> {
+  // Se Redis não disponível, desabilita detecção de anomalias
+  if (!redis) {
+    return { suspicious: false };
+  }
+
   const ip = getClientIP(req);
   const userAgent = req.headers.get("user-agent") || "";
   const userId = token.sub;
@@ -193,13 +379,16 @@ async function detectSecurityAnomalies(
   if (!userId) return { suspicious: false };
 
   try {
-    // Detecta múltiplos IPs em curto período (30min)
+    // Detecta múltiplos IPs em curto período
     const ipKey = `security:ips:${userId}`;
     await redis.sadd(ipKey, ip);
-    await redis.expire(ipKey, 1800); // 30min
+    await redis.expire(
+      ipKey,
+      MIDDLEWARE_CONFIG.ANOMALY_DETECTION.ipTrackingWindow
+    );
 
     const uniqueIPs = await redis.scard(ipKey);
-    if (uniqueIPs > 3) {
+    if (uniqueIPs > MIDDLEWARE_CONFIG.ANOMALY_DETECTION.maxUniqueIPs) {
       await redis.incr(`anomaly:${userId}:multi_ip`);
       await redis.expire(`anomaly:${userId}:multi_ip`, 3600);
       return {
@@ -215,8 +404,10 @@ async function detectSecurityAnomalies(
 
     if (lastUA && lastUA !== userAgent) {
       const similarity = calculateUASimilarity(lastUA as string, userAgent);
-      if (similarity < 0.6) {
-        // Menos de 60% de similaridade
+      if (
+        similarity <
+        MIDDLEWARE_CONFIG.ANOMALY_DETECTION.userAgentSimilarityThreshold
+      ) {
         await redis.incr(`anomaly:${userId}:ua_change`);
         await redis.expire(`anomaly:${userId}:ua_change`, 7200);
         return {
@@ -227,9 +418,11 @@ async function detectSecurityAnomalies(
       }
     }
 
-    await redis.set(uaKey, userAgent, { ex: 86400 }); // 24h
+    await redis.set(uaKey, userAgent, {
+      ex: MIDDLEWARE_CONFIG.ANOMALY_DETECTION.userAgentCacheTime,
+    });
   } catch (error) {
-    if (isDev) console.error("Erro na detecção de anomalias:", error);
+    if (isDev) console.error("❌ Erro na detecção de anomalias:", error);
   }
 
   return { suspicious: false };
@@ -271,9 +464,15 @@ async function enforceMultiDeviceLimit(
   token: JWT,
   req: NextRequest
 ): Promise<{ shouldBlock: boolean }> {
+  // Se Redis não disponível, não bloqueia
+  if (!redis) {
+    if (isDev)
+      console.warn("⚠️ Redis indisponível - multi-device desabilitado");
+    return { shouldBlock: false };
+  }
+
   const deviceFingerprint = generateDeviceFingerprint(req);
   const sessionsKey = `user_sessions:${token.sub}`;
-  const MAX_DEVICES = 3;
 
   try {
     // Recupera sessões existentes
@@ -305,7 +504,7 @@ async function enforceMultiDeviceLimit(
     }
 
     // Novo dispositivo
-    if (activeSessions.length >= MAX_DEVICES) {
+    if (activeSessions.length >= MIDDLEWARE_CONFIG.MAX_DEVICES) {
       // Remove dispositivo mais antigo
       await redis.lpop(sessionsKey);
     }
@@ -320,11 +519,11 @@ async function enforceMultiDeviceLimit(
     };
 
     await redis.rpush(sessionsKey, JSON.stringify(newSession));
-    await redis.expire(sessionsKey, SESSION_TTL_SECONDS);
+    await redis.expire(sessionsKey, MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS);
 
     return { shouldBlock: false };
   } catch (error) {
-    if (isDev) console.error("Erro no controle multi-device:", error);
+    if (isDev) console.error("❌ Erro no controle multi-device:", error);
     return { shouldBlock: false }; // Em caso de erro, não bloqueia
   }
 }
@@ -344,6 +543,11 @@ async function collectDetailedMetrics(
   status: number,
   startTime: number
 ): Promise<void> {
+  // Se Redis não disponível, skip métricas
+  if (!redis) {
+    return;
+  }
+
   try {
     const metrics: RequestMetrics = {
       path: req.nextUrl.pathname,
@@ -362,25 +566,34 @@ async function collectDetailedMetrics(
       redis.hincrby(metricsKey, "total_requests", 1),
       redis.hincrby(metricsKey, `status_${status}`, 1),
       redis.hincrby(metricsKey, "total_duration", metrics.duration),
-      redis.expire(metricsKey, 172800), // 48h
+      redis.expire(metricsKey, MIDDLEWARE_CONFIG.METRICS.metricsRetention),
     ];
 
     // Log detalhado para requests problemáticos
-    if (status >= 400 || metrics.duration > 5000) {
+    if (
+      status >= 400 ||
+      metrics.duration > MIDDLEWARE_CONFIG.METRICS.slowRequestThreshold
+    ) {
       redis
         .lpush("error_requests", JSON.stringify(metrics))
-        .then(() => redis.ltrim("error_requests", 0, 999))
+        .then(() =>
+          redis.ltrim(
+            "error_requests",
+            0,
+            MIDDLEWARE_CONFIG.METRICS.errorRequestsLimit
+          )
+        )
         .catch((error) => {
-          if (isDev) console.error("Erro ao salvar error_requests:", error);
+          if (isDev) console.error("❌ Erro ao salvar error_requests:", error);
         });
     }
 
     // Executa em background
     Promise.all(promises).catch((error) => {
-      if (isDev) console.error("Erro ao coletar métricas:", error);
+      if (isDev) console.error("❌ Erro ao coletar métricas:", error);
     });
   } catch (error) {
-    if (isDev) console.error("Erro na coleta de métricas:", error);
+    if (isDev) console.error("❌ Erro na coleta de métricas:", error);
   }
 }
 
@@ -392,48 +605,54 @@ function applyIntelligentCaching(
   const path = req.nextUrl.pathname;
 
   // Assets estáticos
-  if (path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf)$/)) {
+  if (ROUTE_PATTERNS.staticAssets.test(path)) {
     response.headers.set(
       "Cache-Control",
-      "public, max-age=31536000, immutable"
+      MIDDLEWARE_CONFIG.CACHE_HEADERS.staticAssets
     );
     return;
   }
 
   // API routes
   if (path.startsWith("/api/")) {
-    if (path.includes("/user/") || path.includes("/auth/")) {
+    if (ROUTE_PATTERNS.sensitiveApi.some((pattern) => path.includes(pattern))) {
       response.headers.set(
         "Cache-Control",
-        "private, no-cache, no-store, must-revalidate"
+        MIDDLEWARE_CONFIG.CACHE_HEADERS.sensitiveApi
       );
     } else {
       response.headers.set(
         "Cache-Control",
-        "private, max-age=300, stale-while-revalidate=60"
+        MIDDLEWARE_CONFIG.CACHE_HEADERS.apiRoutes
       );
     }
     return;
   }
 
   // Páginas protegidas
-  if (path.startsWith("/dashboard") || path.startsWith("/admin")) {
-    response.headers.set("Cache-Control", "private, no-cache, must-revalidate");
+  if (
+    ROUTE_PATTERNS.protected.some((pattern) => path.startsWith(pattern)) ||
+    ROUTE_PATTERNS.admin.some((pattern) => path.startsWith(pattern))
+  ) {
+    response.headers.set(
+      "Cache-Control",
+      MIDDLEWARE_CONFIG.CACHE_HEADERS.privatePages
+    );
   } else if (
-    path === "/" ||
-    path.startsWith("/sobre") ||
-    path.startsWith("/contato")
+    ROUTE_PATTERNS.publicCacheable.some(
+      (pattern) => path === pattern || path.startsWith(pattern)
+    )
   ) {
     // Páginas públicas
     response.headers.set(
       "Cache-Control",
-      "public, s-maxage=3600, stale-while-revalidate=86400"
+      MIDDLEWARE_CONFIG.CACHE_HEADERS.publicPages
     );
   } else {
     // Páginas dinâmicas gerais
     response.headers.set(
       "Cache-Control",
-      "private, max-age=300, stale-while-revalidate=60"
+      MIDDLEWARE_CONFIG.CACHE_HEADERS.apiRoutes
     );
   }
 }
@@ -452,6 +671,15 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
         jti: !!token?.jti,
       });
     }
+    return { shouldBlock: false };
+  }
+
+  // Se Redis não disponível, não bloqueia
+  if (!redis) {
+    if (isDev)
+      console.warn(
+        "⚠️ Redis indisponível - controle de sessão única desabilitado"
+      );
     return { shouldBlock: false };
   }
 
@@ -478,19 +706,17 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
         sessionKey,
         JSON.stringify({ jti: token.jti, iat: nowIat }),
         {
-          ex: SESSION_TTL_SECONDS,
+          ex: MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS,
         }
       );
       if (isDev)
-        console.log(
-          `[middleware] Nova sessão registrada (latest wins): ${token.sub}`
-        );
+        console.log(`✅ Nova sessão registrada (latest wins): ${token.sub}`);
       return { shouldBlock: false };
     }
 
     if (stored.jti === token.jti) {
       // Mesma sessão vigente: renova TTL
-      await redis.expire(sessionKey, SESSION_TTL_SECONDS);
+      await redis.expire(sessionKey, MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS);
       return { shouldBlock: false };
     }
 
@@ -501,11 +727,11 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
         sessionKey,
         JSON.stringify({ jti: token.jti, iat: nowIat }),
         {
-          ex: SESSION_TTL_SECONDS,
+          ex: MIDDLEWARE_CONFIG.SESSION_TTL_SECONDS,
         }
       );
       if (isDev) {
-        console.warn("[middleware] Rotação de sessão (latest wins):", {
+        console.warn("⚠️ Rotação de sessão (latest wins):", {
           user: token.sub,
           old: stored,
           new: { jti: token.jti, iat: nowIat },
@@ -516,7 +742,7 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
 
     // ESTE request é mais velho que o armazenado -> bloquear (derrubado)
     if (isDev) {
-      console.warn("[middleware] Sessão antiga bloqueada (latest wins):", {
+      console.warn("🚫 Sessão antiga bloqueada (latest wins):", {
         user: token.sub,
         stored,
         current: { jti: token.jti, iat: nowIat },
@@ -524,15 +750,19 @@ async function enforceSingleSessionLatestWins(token: JWT): Promise<{
     }
     return { shouldBlock: true };
   } catch (error) {
-    console.error(
-      "[middleware] Erro ao verificar sessão única (latest wins):",
-      error
-    );
+    console.error("❌ Erro ao verificar sessão única (latest wins):", error);
     return { shouldBlock: false }; // em falha, não bloqueia
   }
 }
 
 async function checkRateLimit(req: NextRequest): Promise<boolean> {
+  // Se rate limiting não disponível, não bloqueia
+  if (!ratelimit) {
+    if (isDev)
+      console.warn("⚠️ Rate limiting indisponível - sem limitação de requests");
+    return false;
+  }
+
   try {
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -542,10 +772,7 @@ async function checkRateLimit(req: NextRequest): Promise<boolean> {
     return !success;
   } catch (error) {
     if (isDev)
-      console.warn(
-        "[middleware] Rate limiting falhou, permitindo requisição:",
-        error
-      );
+      console.warn("⚠️ Rate limiting falhou, permitindo requisição:", error);
     return false;
   }
 }
@@ -555,13 +782,18 @@ export async function middleware(req: NextRequest) {
   const config = await getConfig();
 
   // Modo manutenção
-  if (config.maintenanceMode && !req.nextUrl.pathname.startsWith("/admin")) {
+  if (
+    config.maintenanceMode &&
+    !MIDDLEWARE_CONFIG.MAINTENANCE.excludePaths.some((path) =>
+      req.nextUrl.pathname.startsWith(path)
+    )
+  ) {
     const response = new NextResponse(
       "Sistema em manutenção. Tente novamente em alguns minutos.",
       {
         status: 503,
         headers: {
-          "Retry-After": "300", // 5 minutos
+          "Retry-After": MIDDLEWARE_CONFIG.MAINTENANCE.retryAfter,
           "Content-Type": "text/plain; charset=utf-8",
         },
       }
@@ -801,10 +1033,33 @@ export async function middleware(req: NextRequest) {
       }
     } catch (metricsError) {
       if (isDev)
-        console.error("Falha ao coletar métricas de erro:", metricsError);
+        console.error("❌ Falha ao coletar métricas de erro:", metricsError);
     }
 
     return response;
+  }
+}
+
+// === FUNÇÃO DE HEALTH CHECK DO UPSTASH ===
+export async function checkUpstashHealth(): Promise<{
+  connected: boolean;
+  latency?: number;
+  error?: string;
+}> {
+  if (!redis) {
+    return { connected: false, error: "Redis não inicializado" };
+  }
+
+  try {
+    const start = Date.now();
+    await redis.ping();
+    const latency = Date.now() - start;
+    return { connected: true, latency };
+  } catch (error) {
+    return {
+      connected: false,
+      error: error instanceof Error ? error.message : "Erro desconhecido",
+    };
   }
 }
 
