@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { JWT } from "next-auth/jwt";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 // Middleware de autenticação e proteção de rotas
 
-// Em Edge Runtime, evite Node 'crypto'. Para CSRF, validamos Origin/Referer.
-const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL; // opcional, para multi-host
+const APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL;
 
-// Geração de nonce compatível com Edge Runtime (prioriza getRandomValues)
+// Configuração do Redis e Rate Limiting usando SDK oficial
+const redis = Redis.fromEnv();
+const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60 s"), // 10 requests per minute
+  analytics: true,
+});
+
+// Geração de nonce compatível com Edge Runtime
 async function generateNonce() {
   if (
     typeof crypto !== "undefined" &&
@@ -81,7 +90,6 @@ function applySecurityHeaders(response: NextResponse) {
   );
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  // Ajuste as permissões às necessidades do app
   response.headers.set(
     "Permissions-Policy",
     [
@@ -100,105 +108,36 @@ function applySecurityHeaders(response: NextResponse) {
   );
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
-  // Cabeçalho X-XSS-Protection removido, pois é obsoleto em navegadores modernos
 }
 
-// --- Rate limiting compatível com Edge ---
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minuto
-const RATE_LIMIT_MAX_REQUESTS = 10; // Máximo de 10 requisições por janela
+// Configurações
 const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24h para controle de sessão única
-
-// Usa APP_ENV para lógica customizada, mantém NODE_ENV para Next.js
-const isProd = process.env.APP_ENV === "production";
 const isDev = process.env.APP_ENV === "development";
-let warnedUpstash = false; // evita spam de logs em produção
-
-// Flag para desabilitar sessão única temporariamente (útil para debug)
 const DISABLE_SINGLE_SESSION = process.env.DISABLE_SINGLE_SESSION === "true";
 
-// Fallback em memória (não escalável, útil para dev/local)
-const rateLimitMap: Map<string, number[]> = new Map();
+// Rate limiting usando SDK oficial do Upstash
+async function checkRateLimit(req: NextRequest): Promise<boolean> {
+  try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
-type RateLimitResult = {
-  limited: boolean;
-  limit: number;
-  remaining: number;
-  resetMs: number; // tempo até reset em milissegundos
-};
-
-async function rateLimit(req: NextRequest): Promise<RateLimitResult> {
-  // Obtém IP do cliente
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-
-  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  // Tenta usar Upstash (Edge-safe). Caso falhe ou não configurado, usa fallback local.
-  if (upstashUrl && upstashToken) {
-    try {
-      const key = `ratelimit:${ip}`;
-      const ttlSeconds = Math.ceil(RATE_LIMIT_WINDOW / 1000);
-      // Pipeline: INCR + EXPIRE NX + PTTL (obter tempo restante da janela)
-      const res = await fetch(`${upstashUrl.replace(/\/$/, "")}/pipeline`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${upstashToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify([
-          ["INCR", key],
-          ["EXPIRE", key, `${ttlSeconds}`, "NX"],
-          ["PTTL", key],
-        ]),
-      });
-
-      if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
-      const data = (await res.json()) as Array<{ result: number }>;
-      const current = Number(data?.[0]?.result ?? 0);
-      const pttl = Number(data?.[2]?.result ?? RATE_LIMIT_WINDOW);
-      const remaining = Math.max(0, RATE_LIMIT_MAX_REQUESTS - current);
-      return {
-        limited: current > RATE_LIMIT_MAX_REQUESTS,
-        limit: RATE_LIMIT_MAX_REQUESTS,
-        remaining,
-        resetMs: pttl > 0 ? pttl : RATE_LIMIT_WINDOW,
-      };
-    } catch {
-      // Silencia e usa fallback local
+    const { success } = await ratelimit.limit(ip);
+    return !success; // retorna true se foi limitado
+  } catch (error) {
+    if (isDev) {
+      console.warn(
+        "[middleware] Rate limiting falhou, permitindo requisição:",
+        error
+      );
     }
+    return false; // Em caso de erro, não bloqueia a requisição
   }
-
-  // Fallback local em memória (sliding window simples)
-  const now = Date.now();
-  if (!rateLimitMap.has(ip)) rateLimitMap.set(ip, []);
-  const timestamps = rateLimitMap.get(ip)!;
-  while (timestamps.length && timestamps[0] <= now - RATE_LIMIT_WINDOW) {
-    timestamps.shift();
-  }
-  timestamps.push(now);
-  rateLimitMap.set(ip, timestamps);
-  const remaining = Math.max(0, RATE_LIMIT_MAX_REQUESTS - timestamps.length);
-  if (isProd && !warnedUpstash && (!upstashUrl || !upstashToken)) {
-    warnedUpstash = true;
-    console.warn(
-      "[middleware] Upstash Redis não configurado em produção. Usando fallback em memória para rate limiting (não escalável)."
-    );
-  }
-  return {
-    limited: timestamps.length > RATE_LIMIT_MAX_REQUESTS,
-    limit: RATE_LIMIT_MAX_REQUESTS,
-    remaining,
-    resetMs: RATE_LIMIT_WINDOW - (now - timestamps[0]!),
-  };
 }
 
-// Removido: manipulação manual de cookies/tokens do NextAuth. Confiamos no SDK para gerenciar cookies.
-
-// Função para forçar sessão única por usuário usando Upstash.
-// Retorna true se detectar sessão duplicada.
+// Função para forçar sessão única por usuário usando Upstash Redis
 async function enforceSingleSession(token: JWT): Promise<boolean> {
-  // Permite desabilitar sessão única temporariamente
   if (DISABLE_SINGLE_SESSION) {
     if (isDev) {
       console.log(
@@ -207,9 +146,6 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
     }
     return false;
   }
-
-  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!token?.sub || !token?.jti) {
     if (isDev) {
@@ -221,18 +157,9 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
     return false;
   }
 
-  if (!upstashUrl || !upstashToken) {
-    if (isProd && !warnedUpstash) {
-      warnedUpstash = true;
-      console.warn(
-        "[middleware] Upstash Redis não configurado em produção. Sessão única não será aplicada."
-      );
-    }
-    return false; // sem Upstash, não conseguimos aplicar sessão única de forma confiável
-  }
-
-  const sessionKey = `session:${token.sub}`;
   try {
+    const sessionKey = `session:${token.sub}`;
+
     if (isDev) {
       console.log(
         "[middleware] Verificando sessão única para usuário:",
@@ -242,59 +169,11 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
       );
     }
 
-    // Tenta reivindicar a sessão com SET NX. Se já existir, faz GET e compara.
-    const res = await fetch(`${upstashUrl.replace(/\/$/, "")}/pipeline`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${upstashToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify([
-        [
-          "SET",
-          sessionKey,
-          token.jti as string,
-          "NX",
-          "EX",
-          `${SESSION_TTL_SECONDS}`,
-        ],
-        ["GET", sessionKey],
-        // Renova TTL se a sessão existente pertencer ao mesmo jti (usuário ativo)
-        [
-          "EVAL",
-          "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('EXPIRE', KEYS[1], ARGV[2]) else return 0 end",
-          "1",
-          sessionKey,
-          token.jti as string,
-          `${SESSION_TTL_SECONDS}`,
-        ],
-      ]),
+    // Tenta definir a sessão se não existir (NX = Only set if Not eXists)
+    const setResult = await redis.set(sessionKey, token.jti, {
+      nx: true,
+      ex: SESSION_TTL_SECONDS,
     });
-    if (!res.ok) {
-      if (isDev) {
-        console.error(
-          "[middleware] Upstash HTTP error:",
-          res.status,
-          res.statusText
-        );
-      }
-      throw new Error(`Upstash HTTP ${res.status}`);
-    }
-
-    const data = (await res.json()) as Array<{
-      result: string | number | null;
-    }>;
-
-    const setResult = data?.[0]?.result; // "OK" se conseguiu setar, null se já existia
-    const current = data?.[1]?.result as string | null;
-
-    if (isDev) {
-      console.log("[middleware] Resultado sessão única:", {
-        setResult,
-        current,
-        jti: token.jti,
-      });
-    }
 
     if (setResult === "OK") {
       if (isDev) {
@@ -306,8 +185,10 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
       return false; // sessão registrada agora
     }
 
-    // Já existia: se o valor atual for diferente do jti, é sessão duplicada
+    // Se não conseguiu setar, verifica se a sessão existente é do mesmo jti
+    const current = await redis.get(sessionKey);
     const isDuplicate = !!current && current !== token.jti;
+
     if (isDuplicate && isDev) {
       console.warn("[middleware] Sessão duplicada detectada:", {
         userId: token.sub,
@@ -316,11 +197,15 @@ async function enforceSingleSession(token: JWT): Promise<boolean> {
       });
     }
 
+    // Se é a mesma sessão, renova o TTL
+    if (!isDuplicate && current === token.jti) {
+      await redis.expire(sessionKey, SESSION_TTL_SECONDS);
+    }
+
     return isDuplicate;
-  } catch (e) {
-    console.error("[middleware] Erro ao verificar sessão única:", e);
-    // Em caso de falha na verificação, não bloqueia o usuário para evitar falso positivo
-    return false;
+  } catch (error) {
+    console.error("[middleware] Erro ao verificar sessão única:", error);
+    return false; // Em caso de falha, não bloqueia o usuário
   }
 }
 
@@ -330,21 +215,13 @@ export async function middleware(req: NextRequest) {
   const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
   const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
 
-  // Aplica rate limiting em rotas sensíveis
+  // Aplica rate limiting em rotas sensíveis usando SDK oficial
   if (isLoginPage || isRegisterPage) {
-    const rl = await rateLimit(req);
-    if (rl.limited) {
-      const headers = new Headers();
-      headers.set("Retry-After", String(Math.ceil(rl.resetMs / 1000)));
-      headers.set("X-RateLimit-Limit", String(rl.limit));
-      headers.set("X-RateLimit-Remaining", String(Math.max(0, rl.remaining)));
-      headers.set(
-        "X-RateLimit-Reset",
-        String(Math.floor((Date.now() + rl.resetMs) / 1000))
-      );
+    const isLimited = await checkRateLimit(req);
+    if (isLimited) {
       return new NextResponse(
         "Muitas requisições. Tente novamente mais tarde.",
-        { status: 429, headers }
+        { status: 429 }
       );
     }
   }
@@ -359,7 +236,7 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    // --- Proteção contra CSRF (Origin/Referer) ---
+    // Proteção contra CSRF (Origin/Referer)
     const stateChanging = ["POST", "PUT", "PATCH", "DELETE"].includes(
       req.method
     );
@@ -387,13 +264,12 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // --- Autenticação ---
+    // Autenticação
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const isAuth = !!token;
 
-    // --- Redirecionamentos ---
+    // Redirecionamentos
     if (isAuth && isLoginPage) {
-      // Usuário autenticado tentando acessar login, redireciona para dashboard
       const response = NextResponse.redirect(new URL("/dashboard", req.url));
       applyCSP(response, nonce);
       return response;
@@ -403,18 +279,14 @@ export async function middleware(req: NextRequest) {
     if (isAuth && token) {
       const duplicate = await enforceSingleSession(token as JWT);
       if (duplicate) {
-        // Em navegações GET, não bloqueia: redireciona para o dashboard (se não estiver nele)
-        // Isso evita falso positivo quando o usuário já está logado e clica em "Entrar"
         if (req.method === "GET") {
           if (req.nextUrl.pathname !== "/dashboard") {
             const res = NextResponse.redirect(new URL("/dashboard", req.url));
             applyCSP(res, nonce);
             return res;
           }
-          // Já estamos no dashboard: segue o fluxo normal
           return NextResponse.next();
         }
-        // Para métodos state-changing, mantém a proteção forte
         const res = new NextResponse("Sessão inválida. Faça login novamente.", {
           status: 403,
         });
@@ -446,10 +318,9 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Fluxo padrão: segue para a próxima rota
+    // Fluxo padrão
     const response = NextResponse.next();
 
-    // Adicionar cabeçalhos de segurança apenas em rotas protegidas ou sensíveis
     if (isProtectedRoute || isLoginPage || isRegisterPage) {
       applyCSP(response, nonce);
       applySecurityHeaders(response);
@@ -457,7 +328,6 @@ export async function middleware(req: NextRequest) {
 
     return response;
   } catch (error) {
-    // --- Tratamento de erro ---
     const traceId =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? (crypto as unknown as { randomUUID: () => string }).randomUUID()
@@ -475,10 +345,8 @@ export async function middleware(req: NextRequest) {
   }
 }
 
-// --- Matcher de rotas protegidas ---
 export const config = {
   matcher: [
-    // Exclui públicos e rotas sensíveis do NextAuth
     "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap.*\\.xml|assets/|images/|favicons/|publico|api/auth).*)",
   ],
 };
