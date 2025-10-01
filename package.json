@@ -81,6 +81,7 @@
     "@types/crypto-js": "^4.2.2",
     "@types/csurf": "^1.11.5",
     "@types/dompurify": "^3.0.5",
+    "@types/http-errors": "^2.0.5",
     "@types/jest": "^30.0.0",
     "@types/joi": "^17.2.2",
     "@types/jsonwebtoken": "^9.0.10",

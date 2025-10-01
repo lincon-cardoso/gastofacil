@@ -27,3 +27,4 @@ export function extractUserId(session: unknown): string | undefined {
   }
   return undefined;
 }
+

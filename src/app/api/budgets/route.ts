@@ -63,6 +63,7 @@ export async function POST(req: Request) {
 
     // Retorna o orçamento criado
     return NextResponse.json(budget, { status: 201 });
+    
   } catch (error) {
     console.error("POST /api/budgets error", error);
 
