@@ -5,7 +5,6 @@ import { authOptions } from "@/utils/auth-options";
 import { Prisma } from "@prisma/client";
 import { extractUserId } from "@/utils/auth";
 import { z } from "zod";
-import DOMPurify from "isomorphic-dompurify";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -52,12 +51,25 @@ const cardSchema = z.object({
     .max(31, { message: "Dia inválido" }),
 });
 
-// Função para sanitizar entrada
+// Função para sanitizar entrada (implementação simples e segura)
 function sanitizeInput(input: unknown): string {
   if (typeof input !== "string") {
     return "";
   }
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+
+  // Remove caracteres HTML potencialmente perigosos
+  return input
+    .replace(/[<>\"'&]/g, (char) => {
+      const entities: { [key: string]: string } = {
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#x27;",
+        "&": "&amp;",
+      };
+      return entities[char] || char;
+    })
+    .trim();
 }
 
 // Função para lidar com requisições POST
@@ -215,9 +227,15 @@ export async function GET(req: Request) {
 
     const totalCards = await prisma.card.count({ where: { userId } });
 
+    // Converter BigInt para string para serialização JSON
+    const serializedCards = cards.map((card) => ({
+      ...card,
+      number: card.number ? card.number.toString() : null,
+    }));
+
     return NextResponse.json(
       {
-        data: cards,
+        data: serializedCards,
         pagination: {
           total: totalCards,
           page,
