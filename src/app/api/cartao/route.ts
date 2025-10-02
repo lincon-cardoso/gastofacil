@@ -1,4 +1,3 @@
-// Importações necessárias para a rota
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
 import { getServerSession } from "next-auth";
@@ -6,71 +5,101 @@ import { authOptions } from "@/utils/auth-options";
 import { Prisma } from "@prisma/client";
 import { extractUserId } from "@/utils/auth";
 import { z } from "zod";
+import DOMPurify from "isomorphic-dompurify";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-// Esquema de validação usando Zod para garantir que os dados recebidos sejam válidos
-type CardData = {
-  cardName: string;
-  cardNumber?: number | null; // Agora é um número
-  limit: number;
-  dueDay: number;
-};
+// Configuração de rate limiting
+const redis = process.env.UPSTASH_REDIS_REST_URL ? Redis.fromEnv() : null;
+const createCardRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, "60 s"), // 5 requisições por minuto
+      analytics: true,
+    })
+  : null;
 
-// Ajuste no esquema de validação
-// Validação mais rigorosa para número de cartão
-
+// Esquema de validação aprimorado
 const cardSchema = z.object({
   cardName: z
     .string()
     .min(1, { message: "O nome do cartão é obrigatório" })
-    .regex(/^(?!\d+$).*/, {
-      message: "O nome do cartão não pode conter apenas números",
-    }),
+    .max(50, { message: "Nome muito longo" })
+    .regex(/^[\p{L}\p{N}\s\-\.]+$/u, {
+      message: "Nome contém caracteres inválidos",
+    })
+    .refine((val) => val.trim().length > 0, {
+      message: "Nome não pode ser apenas espaços",
+    })
+    .transform((val) => val.trim()),
 
   cardNumber: z
     .number()
-    .int({ message: "O número do cartão deve ser um número inteiro" })
-    .min(1000000000000, {
-      message: "O número do cartão deve ter pelo menos 13 dígitos",
-    })
-    .max(9999999999999999999, {
-      message: "O número do cartão deve ter no máximo 19 dígitos",
-    })
-    .optional()
-    .nullable(),
+    .int()
+    .min(1000000000000, { message: "Número do cartão inválido" })
+    .max(9999999999999999, { message: "Número do cartão inválido" })
+    .optional(),
 
   limit: z
     .number()
-    .positive({
-      message: "O limite deve ser um número positivo maior que zero",
-    })
-    .finite({ message: "O limite deve ser um número finito" })
-    .refine((val) => val !== undefined, { message: "O limite é obrigatório" }),
+    .positive({ message: "Limite deve ser positivo" })
+    .max(50000, { message: "Limite muito alto" }),
 
   dueDay: z
     .number()
-    .int({ message: "O dia de vencimento deve ser um número inteiro" })
-    .min(1, { message: "O dia de vencimento deve ser no mínimo 1" })
-    .max(31, { message: "O dia de vencimento deve ser no máximo 31" }),
+    .int()
+    .min(1, { message: "Dia inválido" })
+    .max(31, { message: "Dia inválido" }),
 });
-// Função que cria um novo cartão
+
+// Função para sanitizar entrada
+function sanitizeInput(input: unknown): string {
+  if (typeof input !== "string") {
+    return "";
+  }
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+}
+
+// Função para lidar com requisições POST
 export async function POST(req: Request) {
   try {
-    // Obtém a sessão do usuário autenticado
+    // Verificar tamanho do payload
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > 1024) {
+      return NextResponse.json(
+        { error: "Payload muito grande" },
+        { status: 413 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     const userId = extractUserId(session);
 
-    // Verifica se o usuário está autenticado
     if (!userId) {
-      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Extrai e valida os dados do corpo da requisição
+    // Rate limiting (apenas se Redis estiver configurado)
+    if (createCardRateLimit) {
+      const { success } = await createCardRateLimit.limit(userId);
+      if (!success) {
+        return NextResponse.json(
+          { error: "Muitas requisições. Tente novamente mais tarde." },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await req.json();
-    const parsedData = cardSchema.safeParse(body);
+    const sanitizedBody = {
+      cardName: sanitizeInput(body.cardName),
+      cardNumber: body.cardNumber,
+      limit: body.limit,
+      dueDay: body.dueDay,
+    };
 
-    // Adição de códigos de erro nas validações
+    const parsedData = cardSchema.safeParse(sanitizedBody);
 
-    // Verifica se os dados são válidos
     if (!parsedData.success) {
       const validationErrors = parsedData.error.issues.map((issue) => ({
         field: issue.path.join("."),
@@ -88,65 +117,118 @@ export async function POST(req: Request) {
       );
     }
 
-    // Desestrutura os dados validados
-    const { cardName, cardNumber, limit, dueDay }: CardData = parsedData.data;
+    const { cardName, cardNumber, limit, dueDay } = parsedData.data;
 
-    // Verifica se já existe um cartão com o mesmo nome para o usuário
-
-    const existingCard = await prisma.card.findFirst({
-      where: {
-        userId: userId,
-        OR: [
-          { name: cardName },
-          { number: cardNumber != null ? String(cardNumber) : undefined },
-        ],
-      },
+    const existingCardByName = await prisma.card.findFirst({
+      where: { userId, name: cardName },
     });
 
-    if (existingCard) {
+    const existingCardByNumber = cardNumber
+      ? await prisma.card.findFirst({
+          where: { userId, number: cardNumber },
+        })
+      : null;
+
+    if (existingCardByName || existingCardByNumber) {
       return NextResponse.json(
-        {
-          error: "Já existe um cartão com este nome ou número",
-        },
+        { error: "Já existe um cartão com este nome ou número" },
         { status: 400 }
       );
     }
 
-    // Cria o cartão no banco de dados
     const newCard = await prisma.card.create({
       data: {
-        name: cardName, // Nome do cartão
-        number: cardNumber != null ? String(cardNumber) : "", // Garante que seja null em vez de undefined
-        limit, // Limite do cartão
-        dueDay: Number(dueDay), // Converte dueDay para número, caso seja string
-        userId: userId, // Relaciona o cartão ao usuário autenticado
+        name: cardName,
+        number: cardNumber,
+        limit: limit,
+        dueDay: dueDay,
+        userId: userId,
       },
     });
 
-    // Retorna o cartão criado (omitindo informações sensíveis)
     return NextResponse.json(
       {
-        id: newCard.id, // ID do cartão
-        name: newCard.name, // Nome do cartão
-        limit: newCard.limit, // Limite do cartão
-        dueDay: newCard.dueDay, // Dia de vencimento do cartão
+        id: newCard.id,
+        name: newCard.name,
+        limit: newCard.limit,
+        dueDay: newCard.dueDay,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Erro ao criar cartao:", error);
+    console.error("Erro ao criar cartão:", error);
 
-    // Trata erros conhecidos do Prisma, como violação de unicidade
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return NextResponse.json(
-          { error: "Ja existe um cartao com esse nome" },
+          { error: "Conflito de dados: já existe um cartão com esses valores" },
           { status: 409 }
         );
       }
     }
 
-    // Trata outros erros de forma genérica
+    return NextResponse.json(
+      {
+        error:
+          "Erro interno do servidor. Por favor, tente novamente mais tarde.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Função para lidar com requisições GET
+export async function GET(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = extractUserId(session);
+
+    if (!userId) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+
+    if (page < 1 || limit < 1) {
+      return NextResponse.json(
+        { error: "Parâmetros de paginação inválidos" },
+        { status: 400 }
+      );
+    }
+
+    const skip = (page - 1) * limit;
+
+    const cards = await prisma.card.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        name: true,
+        number: true,
+        limit: true,
+        dueDay: true,
+      },
+      skip,
+      take: limit,
+    });
+
+    const totalCards = await prisma.card.count({ where: { userId } });
+
+    return NextResponse.json(
+      {
+        data: cards,
+        pagination: {
+          total: totalCards,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCards / limit),
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Erro ao buscar cartões:", error);
     return NextResponse.json(
       {
         error:
