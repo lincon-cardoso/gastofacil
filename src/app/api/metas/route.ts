@@ -7,26 +7,28 @@ import { Prisma } from "@prisma/client";
 import { createBudgetSchema } from "@/schemas/budget";
 import { extractUserId } from "@/utils/auth";
 
-// Função para criar um novo orçamento
+// função para criar metas
+
 export async function POST(req: Request) {
   try {
-    // Obtém a sessão do usuário autenticado
+    //   obtem a sessao do usuario autenticado
     const session = await getServerSession(authOptions);
     const userId = extractUserId(session);
 
-    // Verifica se o usuário está autenticado
+    // verifica se o usuario esta autenticado
     if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Lê e valida os dados do corpo da requisição
+    // le e valida os dados do corpor da requisição
+
     const body = await req.json().catch(() => ({}));
     const parsed = createBudgetSchema.safeParse({
       name: body?.name ?? body?.budgetName,
       amount: body?.amount ?? body?.value,
     });
 
-    // Retorna erro caso os dados sejam inválidos
+    // retorna erro caso os dados sejam invalidos
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Dados inválidos", issues: parsed.error.format() },
@@ -34,19 +36,29 @@ export async function POST(req: Request) {
       );
     }
 
+    // dados validos
+
     const { name, amount } = parsed.data;
 
-    // Verifica se já existe um orçamento com o mesmo nome para o usuário
-    const exists = await prisma.budget.findFirst({ where: { userId, name } });
-    if (exists) {
+    // Verifica se ja existe um orcamento com o mesmo nome
+
+    const existingBudget = await prisma.budget.findFirst({
+      where: {
+        userId,
+        name,
+      },
+    });
+
+    if (existingBudget) {
       return NextResponse.json(
         { error: "Já existe um orçamento com esse nome" },
         { status: 409 }
       );
     }
 
-    // Cria o orçamento no banco de dados
-    const budget = await prisma.budget.create({
+    // cria o orcamento no banco de dados
+
+    const newBudget = await prisma.budget.create({
       data: {
         name,
         amount,
@@ -61,10 +73,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // Retorna o orçamento criado
-    return NextResponse.json(budget, { status: 201 });
+    return NextResponse.json({ budget: newBudget }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/cartao error", error);
+    console.error("Erro ao criar meta:", error);
+
+    //    trata erros conhecidos prisma
 
     // Trata erros conhecidos do Prisma
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -83,48 +96,42 @@ export async function POST(req: Request) {
       { error: "Erro ao criar orçamento" },
       { status: 500 }
     );
-    
   }
 }
 
-// Função para listar os orçamentos do usuário
+// funcao para obter todas as metas do usuario autenticado
+
 export async function GET() {
   try {
-    // Obtém a sessão do usuário autenticado
+    // obtem a sessao do usuario autenticado
     const session = await getServerSession(authOptions);
     const userId = extractUserId(session);
 
-    // Verifica se o usuário está autenticado
+    // verifica se o usuario esta autenticado
     if (!userId) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Busca os orçamentos do usuário no banco de dados
+    // busca todas as metas do usuario no banco de dados
     const budgets = await prisma.budget.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        amount: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
 
-    // Retorna a lista de orçamentos
-    return NextResponse.json(budgets);
+    // retorna as metas encontradas
+      return NextResponse.json(budgets);
+      
   } catch (error) {
-    console.error("GET /api/cartao error", error);
+    console.error("GET /api/metas error", error);
 
     // Retorna erro genérico
     return NextResponse.json(
-      { error: "Erro ao listar cartões" },
+      { error: "Erro ao listar metas" },
       { status: 500 }
     );
   }
 }
 
-// Configurações dinâmicas e de runtime
+// configuracao dinamica e de run time
+
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

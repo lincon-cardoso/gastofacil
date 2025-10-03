@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export async function POST(request: Request) {
   try {
-    // Rate limit removido
+  
 
     let body: unknown;
     try {
