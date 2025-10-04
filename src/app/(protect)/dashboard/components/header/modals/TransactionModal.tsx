@@ -4,6 +4,7 @@ import BaseModal from "./BaseModal";
 import styles from "../Modal.module.scss";
 import { useCategories } from "@/hooks/useCategories";
 import { useBudgets } from "@/hooks/useBudgets";
+import { useTransactionMutate } from "@/hooks/useTransactionMutate";
 
 type Props = {
   open: boolean;
@@ -21,6 +22,7 @@ export default function TransactionModal({ open, onClose }: Props) {
     isLoading: budgetsLoading,
     error: budgetsError,
   } = useBudgets();
+  const { handleTransactionChange } = useTransactionMutate();
 
   // estado para os campos do formulário
   const [formData, setFormData] = useState({
@@ -87,6 +89,9 @@ export default function TransactionModal({ open, onClose }: Props) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erro ao salvar transação");
       }
+
+      // Atualiza os dados em tempo real
+      await handleTransactionChange();
 
       // Limpa o formulário e fecha o modal após sucesso
       setFormData({
