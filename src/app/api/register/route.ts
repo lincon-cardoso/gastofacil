@@ -5,8 +5,7 @@ import { registerApiSchema } from "@/utils/validation";
 import { z } from "zod";
 
 export async function POST(request: Request) {
-  try {
-  
+  try {  
 
     let body: unknown;
     try {

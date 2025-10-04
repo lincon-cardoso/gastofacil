@@ -1,133 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { clearUserUpstashData } from "@/middleware";
 
-type JwtWithJti = {
-  sub?: string | null;
-  jti?: string | null;
-  role?: string | null;
+// Tipo para o token JWT com informações do usuário
+type JwtToken = {
+  sub?: string | null; // ID do usuário
+  role?: string | null; // Função/papel do usuário
 };
 
-// Encerra a sessão e limpa todos os dados do usuário no Upstash
-// POST /api/auth/logout
+/**
+ * Rota de logout - Encerra a sessão do usuário
+ * Esta rota é responsável por processar solicitações de logout
+ * e validar se existe uma sessão ativa para o usuário
+ */
 export async function POST(req: NextRequest) {
   try {
+    // Extrai o token JWT da requisição usando o secret do NextAuth
     const token = (await getToken({
       req,
       secret: process.env.NEXTAUTH_SECRET,
-    })) as JwtWithJti | null;
+    })) as JwtToken | null;
 
+    // Verifica se existe um token válido com ID de usuário
     if (!token?.sub) {
       return NextResponse.json(
         {
           ok: true,
-          cleared: false,
+          message: "Nenhuma sessão ativa encontrada",
           reason: "no_user_session",
         },
         { status: 200 }
       );
     }
 
-    const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
-    const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    // Log para auditoria (opcional)
+    console.log(`[logout] Usuário ${token.sub} realizou logout`);
 
-    if (!upstashUrl || !upstashToken) {
-      // Sem Upstash configurado, apenas retorna ok para não bloquear o fluxo de logout
-      return NextResponse.json(
-        {
-          ok: true,
-          cleared: false,
-          reason: "upstash_not_configured",
-        },
-        { status: 200 }
-      );
-    }
-
-    // Usa a nova função de limpeza completa do middleware
-    const cleanupResult = await clearUserUpstashData(token.sub);
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[logout] Resultado da limpeza para usuário ${token.sub}:`, {
-        success: cleanupResult.success,
-        clearedKeysCount: cleanupResult.clearedKeys.length,
-        clearedKeys: cleanupResult.clearedKeys,
-        error: cleanupResult.error,
-      });
-    }
-
-    // Fallback: se a função nova falhou, tenta o método antigo
-    if (!cleanupResult.success) {
-      console.warn(
-        "[logout] Limpeza completa falhou, tentando método legacy..."
-      );
-
-      try {
-        const key = `session:${token.sub}`;
-        const jti = token?.jti ?? undefined;
-        const baseUrl = upstashUrl.replace(/\/$/, "");
-
-        let legacyCleared = false;
-
-        if (jti) {
-          // Deleta somente se o valor armazenado for igual ao JTI da sessão atual (CAS)
-          const script =
-            "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end";
-          const res = await fetch(`${baseUrl}/pipeline`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${upstashToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify([["EVAL", script, "1", key, jti]]),
-          });
-
-          if (res.ok) {
-            const data = (await res.json()) as Array<{ result: number }>;
-            legacyCleared = Number(data?.[0]?.result ?? 0) > 0;
-          }
-        }
-
-        return NextResponse.json(
-          {
-            ok: true,
-            cleared: legacyCleared,
-            method: "legacy",
-            fallback: true,
-          },
-          { status: 200 }
-        );
-      } catch (legacyError) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[logout] Fallback também falhou:", legacyError);
-        }
-
-        return NextResponse.json(
-          {
-            ok: true,
-            cleared: false,
-            error: "cleanup_failed",
-          },
-          { status: 200 }
-        );
-      }
-    }
-
+    // Retorna sucesso - a limpeza real da sessão é feita pelo NextAuth
+    // através dos cookies e mecanismos internos
     return NextResponse.json(
       {
         ok: true,
-        cleared: cleanupResult.success,
-        clearedKeysCount: cleanupResult.clearedKeys.length,
-        method: "complete_cleanup",
+        message: "Logout realizado com sucesso",
+        userId: token.sub,
       },
       { status: 200 }
     );
-  } catch (e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.error("[logout] Erro inesperado:", e);
-    }
+  } catch (error) {
+    // Log do erro para debugging
+    console.error("[logout] Erro inesperado durante logout:", error);
+
+    // Retorna erro interno do servidor
     return NextResponse.json(
       {
         ok: false,
+        message: "Erro interno do servidor",
         error: "unexpected_error",
       },
       { status: 500 }
@@ -135,11 +61,20 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Garante execução a cada requisição e que cookies sejam considerados
+/**
+ * Configurações de cache e execução para a rota
+ * - dynamic: "force-dynamic" força a execução a cada requisição
+ * - revalidate: 0 desabilita o cache da resposta
+ * Isso garante que o logout sempre execute e não seja cacheado
+ */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Opcional: trata GET como logout também (idempotente)
+/**
+ * Método GET - Trata requisições GET como logout também
+ * Alguns clientes podem fazer GET em vez de POST para logout
+ * Esta implementação garante que ambos os métodos funcionem (idempotente)
+ */
 export async function GET(req: NextRequest) {
   return POST(req);
 }
