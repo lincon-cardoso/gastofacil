@@ -99,38 +99,6 @@ export async function POST(req: Request) {
   }
 }
 
-// funcao para obter todas as metas do usuario autenticado
-
-export async function GET() {
-  try {
-    // obtem a sessao do usuario autenticado
-    const session = await getServerSession(authOptions);
-    const userId = extractUserId(session);
-
-    // verifica se o usuario esta autenticado
-    if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
-    // busca todas as metas do usuario no banco de dados
-    const budgets = await prisma.budget.findMany({
-      where: { userId },
-    });
-
-    // retorna as metas encontradas
-      return NextResponse.json(budgets);
-      
-  } catch (error) {
-    console.error("GET /api/metas error", error);
-
-    // Retorna erro genérico
-    return NextResponse.json(
-      { error: "Erro ao listar metas" },
-      { status: 500 }
-    );
-  }
-}
-
 // configuracao dinamica e de run time
 
 export const dynamic = "force-dynamic";

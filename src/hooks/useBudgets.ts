@@ -25,11 +25,12 @@ export function useBudgets() {
   const canFetch = !!session?.userId && status !== "loading";
 
   const { data, error, isLoading, mutate } = useSWR<Budget[]>(
-    canFetch ? "/api/budgets" : null,
+    canFetch ? "/api/dashboard?type=budgets" : null,
     fetcher,
     {
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
+      refreshInterval: 60000, // 1 minuto
       dedupingInterval: 5_000,
     }
   );

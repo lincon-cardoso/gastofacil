@@ -98,43 +98,6 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    const userId = extractUserId(session);
-
-    // verifica se o usuario esta autenticado
-    if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
-    // busca as transações do usuario através dos orçamentos
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        budget: {
-          userId,
-        },
-      },
-      include: {
-        category: {
-          select: { id: true, name: true },
-        },
-        budget: {
-          select: { id: true, name: true },
-        },
-      },
-      orderBy: { date: "desc" },
-    });
-
-    // retorna as transações encontradas
-    return NextResponse.json(transactions);
-  } catch (error) {
-    console.error("Erro ao buscar transações", error);
-    return NextResponse.json(
-      {
-        error: "Erro ao buscar transações",
-      },
-      { status: 500 }
-    );
-  }
-}
+// Configurações dinâmicas e de runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";

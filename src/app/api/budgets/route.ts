@@ -63,7 +63,6 @@ export async function POST(req: Request) {
 
     // Retorna o orçamento criado
     return NextResponse.json(budget, { status: 201 });
-    
   } catch (error) {
     console.error("POST /api/budgets error", error);
 
@@ -82,44 +81,6 @@ export async function POST(req: Request) {
     // Retorna erro genérico
     return NextResponse.json(
       { error: "Erro ao criar orçamento" },
-      { status: 500 }
-    );
-  }
-}
-
-// Função para listar os orçamentos do usuário
-export async function GET() {
-  try {
-    // Obtém a sessão do usuário autenticado
-    const session = await getServerSession(authOptions);
-    const userId = extractUserId(session);
-
-    // Verifica se o usuário está autenticado
-    if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
-    // Busca os orçamentos do usuário no banco de dados
-    const budgets = await prisma.budget.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        amount: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    // Retorna a lista de orçamentos
-    return NextResponse.json(budgets);
-  } catch (error) {
-    console.error("GET /api/budgets error", error);
-
-    // Retorna erro genérico
-    return NextResponse.json(
-      { error: "Erro ao listar orçamentos" },
       { status: 500 }
     );
   }

@@ -71,32 +71,6 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    const userId = extractUserId(session);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
-    const categories = await prisma.expenseCategory.findMany({
-      where: { userId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, description: true },
-    });
-
-    return NextResponse.json(categories);
-  } catch (error) {
-    console.error("GET /api/categories error", error);
-
-    return NextResponse.json(
-      { error: "Erro ao listar categorias" },
-      { status: 500 }
-    );
-  }
-}
-
 // Configurações dinâmicas e de runtime
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

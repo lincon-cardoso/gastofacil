@@ -22,11 +22,12 @@ export function useCategories() {
   const { session, status } = useSessionSWR();
   const canFetch = !!session?.userId && status !== "loading";
   const { data, error, isLoading, mutate } = useSWR<Category[]>(
-    canFetch ? "/api/categories" : null,
+    canFetch ? "/api/dashboard?type=categories" : null,
     fetcher,
     {
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
+      refreshInterval: 300000, // 5 minutos (categorias mudam pouco)
       dedupingInterval: 5_000,
     }
   );

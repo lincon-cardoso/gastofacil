@@ -10,9 +10,10 @@ export function useTransactionMutate() {
     // Atualiza os dados do dashboard unificado
     await refreshDashboard();
 
-    // Atualiza outros dados relacionados se necessário
-    await mutate("/api/transactions");
-    await mutate("/api/budgets");
+    // Atualiza dados específicos se necessário
+    await mutate(
+      (key) => typeof key === "string" && key.startsWith("/api/dashboard?type=")
+    );
   };
 
   return { handleTransactionChange };
