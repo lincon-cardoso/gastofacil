@@ -24,6 +24,7 @@ export default function Main() {
     totalReceita,
     totalTransacoes,
     saldoAtual,
+    totalOrcamentoCartao,
   } = useUserData();
 
   // Estados de carregamento e erro
@@ -68,7 +69,7 @@ export default function Main() {
           {/* Card de orçamentos - limites planejados */}
           <Card
             title="Orçamentos"
-            value={`MANUTENCAO `}
+            value={`R$ ${totalOrcamentoCartao.toFixed(2)}`}
             description="Total planejado"
             icon={<GoCreditCard />}
             className={styles.cartoes}

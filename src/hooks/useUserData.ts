@@ -29,6 +29,7 @@ type DashboardData = {
   totalReceita: number;
   totalTransacoes: number;
   saldoAtual: number;
+  totalOrcamentoCartao: number;
 };
 
 // Função fetcher para requisições
@@ -78,6 +79,7 @@ export function useUserData() {
     totalReceita: dashboardData?.totalReceita || 0,
     totalTransacoes: dashboardData?.totalTransacoes || 0,
     saldoAtual: dashboardData?.saldoAtual || 0,
+    totalOrcamentoCartao: dashboardData?.totalOrcamentoCartao || 0,
     refreshDashboard,
   };
 }

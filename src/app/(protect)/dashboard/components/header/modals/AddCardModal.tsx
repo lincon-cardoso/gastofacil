@@ -1,11 +1,61 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import BaseModal from "./BaseModal";
 import styles from "../Modal.module.scss";
 
 type Props = { open: boolean; onClose: () => void };
 
 export default function AddCardModal({ open, onClose }: Props) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      number: formData.get("number") as string,
+      limit: parseFloat(formData.get("limit") as string) || 0,
+      dueDay: parseInt(formData.get("dueDay") as string) || 1,
+    };
+
+    try {
+      const response = await fetch("/api/cards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao adicionar cartão");
+      }
+
+      // Sucesso - fechar modal e limpar formulário
+      onClose();
+      (e.target as HTMLFormElement).reset();
+    } catch (err) {
+      console.error("Erro ao adicionar cartão:", err);
+      setError(err instanceof Error ? err.message : "Erro inesperado");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCardNumber = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const cleaned = value.replace(/\D/g, "");
+    // Adiciona espaços a cada 4 dígitos
+    const formatted = cleaned.replace(/(\d{4})(?=\d)/g, "$1 ");
+    return formatted;
+  };
+
   return (
     <BaseModal
       open={open}
@@ -14,37 +64,47 @@ export default function AddCardModal({ open, onClose }: Props) {
       ariaLabelledBy="add-card-title"
     >
       <div className={styles.modalBody}>
-        <form
-          className={styles.transactionForm}
-          onSubmit={(e) => e.preventDefault()}
-        >
+        <form className={styles.transactionForm} onSubmit={handleSubmit}>
+          {error && <div className={styles.errorMessage}>{error}</div>}
+
           <div className={styles.formGroup}>
-            <label htmlFor="cardName">Nome do cartão</label>
+            <label htmlFor="name">Nome do cartão</label>
             <input
-              id="cardName"
-              name="cardName"
+              id="name"
+              name="name"
               placeholder="Ex: Nubank"
               required
+              disabled={loading}
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="cardNumber">Número</label>
+            <label htmlFor="number">Número</label>
             <input
-              id="cardNumber"
-              name="cardNumber"
+              id="number"
+              name="number"
               placeholder="#### #### #### ####"
+              maxLength={19}
+              disabled={loading}
+              onChange={(e) => {
+                e.target.value = formatCardNumber(e.target.value);
+              }}
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="limit">Limite</label>
             <input
               type="number"
               step="0.01"
+              min="0"
               id="limit"
               name="limit"
               placeholder="Ex: 2500.00"
+              disabled={loading}
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="dueDay">Dia de fechamento</label>
             <input
@@ -54,27 +114,29 @@ export default function AddCardModal({ open, onClose }: Props) {
               id="dueDay"
               name="dueDay"
               placeholder="Ex: 15"
+              disabled={loading}
             />
           </div>
+
           <div className={styles.formActions}>
-            <button type="submit" className={styles.saveButton}>
-              Salvar
+            <button
+              type="submit"
+              className={styles.saveButton}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar"}
             </button>
             <button
               type="button"
               className={styles.closeButton}
               onClick={onClose}
+              disabled={loading}
             >
               Cancelar
             </button>
           </div>
         </form>
       </div>
-      <footer className={styles.modalActions}>
-        <button className={styles.closeButton} onClick={onClose}>
-          Fechar
-        </button>
-      </footer>
     </BaseModal>
   );
 }

@@ -9,6 +9,7 @@ type DashboardData = {
   totalReceita: number;
   totalTransacoes: number;
   saldoAtual: number;
+  totalOrcamentoCartao: number;
   budgets?: Array<{
     id: string;
     name: string;
@@ -81,7 +82,7 @@ export async function GET(request: Request) {
 async function getDashboardData(userId: string) {
   try {
     // Busca todas as informações em paralelo para melhor performance
-    const [budget, transactions] = await Promise.all([
+    const [budget, transactions, cards] = await Promise.all([
       // Budgets para total de orçamentos planejados
       prisma.budget.findMany({
         where: { userId },
@@ -101,7 +102,24 @@ async function getDashboardData(userId: string) {
           amount: true,
         },
       }),
+
+      // Puxa os dados do card ve nome e limite e dia de fechamento
+      prisma.card.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          name: true,
+          limit: true,
+          dueDay: true,
+        },
+      })
+
     ]);
+
+    // Total de orcamento cartao
+
+    const totalOrcamentoCartao = cards.reduce((sum, c) => sum + Number(c.limit), 0);
+
 
     const totalReceita = budget.reduce((sum, b) => sum + Number(b.amount), 0);
     // somar todas as transacoes do usuario
@@ -118,6 +136,7 @@ async function getDashboardData(userId: string) {
       totalReceita,
       totalTransacoes,
       saldoAtual,
+      totalOrcamentoCartao,
     };
 
     return NextResponse.json(dashboardData);

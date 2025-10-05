@@ -45,14 +45,17 @@ export default function Modals({
     <>
       <TransactionModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+
       <AddCardModal
         open={!!addCardOpen}
         onClose={() => setAddCardOpen?.(false)}
       />
+
       <CreateGoalModal
         open={!!createGoalOpen}
         onClose={() => setCreateGoalOpen?.(false)}
       />
+
       <CreateMonthlyBudgetModal
         isOpen={!!createMonthlyBudgetOpen}
         onClose={() => setCreateMonthlyBudgetOpen?.(false)}

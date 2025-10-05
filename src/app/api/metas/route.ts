@@ -4,7 +4,7 @@ import { prisma } from "@/utils/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import { Prisma } from "@prisma/client";
-import { createBudgetSchema } from "@/schemas/budget";
+import { createGoalSchema } from "@/schemas/goal";
 import { extractUserId } from "@/utils/auth";
 
 // função para criar metas
@@ -23,9 +23,10 @@ export async function POST(req: Request) {
     // le e valida os dados do corpor da requisição
 
     const body = await req.json().catch(() => ({}));
-    const parsed = createBudgetSchema.safeParse({
-      name: body?.name ?? body?.budgetName,
-      amount: body?.amount ?? body?.value,
+    const parsed = createGoalSchema.safeParse({
+      name: body?.name ?? body?.goalName,
+      targetAmount: Number(body?.targetAmount ?? body?.value),
+      deadline: body?.deadline,
     });
 
     // retorna erro caso os dados sejam invalidos
@@ -38,42 +39,45 @@ export async function POST(req: Request) {
 
     // dados validos
 
-    const { name, amount } = parsed.data;
+    const { name, targetAmount, deadline } = parsed.data;
 
-    // Verifica se ja existe um orcamento com o mesmo nome
+    // Verifica se ja existe uma meta com o mesmo nome
 
-    const existingBudget = await prisma.budget.findFirst({
+    const existingGoal = await prisma.goal.findFirst({
       where: {
         userId,
         name,
       },
     });
 
-    if (existingBudget) {
+    if (existingGoal) {
       return NextResponse.json(
-        { error: "Já existe um orçamento com esse nome" },
+        { error: "Já existe uma meta com esse nome" },
         { status: 409 }
       );
     }
 
-    // cria o orcamento no banco de dados
+    // cria a meta no banco de dados
 
-    const newBudget = await prisma.budget.create({
+    const newGoal = await prisma.goal.create({
       data: {
         name,
-        amount,
+        targetAmount,
+        deadline,
         userId,
       },
       select: {
         id: true,
         name: true,
-        amount: true,
+        targetAmount: true,
+        currentAmount: true,
+        deadline: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
-    return NextResponse.json({ budget: newBudget }, { status: 201 });
+    return NextResponse.json({ goal: newGoal }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar meta:", error);
 
@@ -84,7 +88,7 @@ export async function POST(req: Request) {
       if (error.code === "P2002") {
         return NextResponse.json(
           {
-            error: "Orçamento com valores duplicados ou conflito de constraint",
+            error: "Meta com valores duplicados ou conflito de constraint",
           },
           { status: 409 }
         );
@@ -92,10 +96,7 @@ export async function POST(req: Request) {
     }
 
     // Retorna erro genérico
-    return NextResponse.json(
-      { error: "Erro ao criar orçamento" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro ao criar meta" }, { status: 500 });
   }
 }
 
