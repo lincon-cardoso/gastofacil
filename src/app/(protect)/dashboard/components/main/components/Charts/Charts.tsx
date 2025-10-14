@@ -27,11 +27,11 @@ const lineData = [
 ];
 
 const pieData = [
-  { name: "Lazer" },
-  { name: "Mercado" },
-  { name: "Moradia" },
-  { name: "Saúde"},
-  { name: "Transporte" },
+  { name: "Lazer", value: 1000 },
+  { name: "Mercado", value: 900 },
+  { name: "Moradia", value: 300 },
+  { name: "Saúde", value: 200 },
+  { name: "Transporte", value: 100 },
 ];
 
 export default function Charts() {
