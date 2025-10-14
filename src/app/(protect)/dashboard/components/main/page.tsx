@@ -45,7 +45,7 @@ export default function Main() {
           {/* Card de saldo atual - receitas menos despesas */}
           <Card
             title="Saldo Atual"
-            value={`R$ ${saldoAtual.toFixed(2)}`}
+            value={`R$ ${(saldoAtual).toFixed(2)}`}
             description={"Saldo disponível"}
             icon={<GoGraph />}
             className={styles.saldoAtual}

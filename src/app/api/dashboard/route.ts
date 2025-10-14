@@ -130,7 +130,7 @@ async function getDashboardData(userId: string) {
     );
 
     //  Soma total Receita menos despesa
-    const saldoAtual = totalReceita - totalTransacoes;
+    const saldoAtual = totalReceita - totalTransacoes - totalOrcamentoCartao;
 
     const dashboardData: DashboardData = {
       totalReceita,
