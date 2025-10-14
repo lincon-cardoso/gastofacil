@@ -11,10 +11,6 @@ const createCardSchema = z.object({
     .string()
     .min(1, "Nome é obrigatório")
     .max(255, "Nome deve ter no máximo 255 caracteres"),
-  number: z
-    .string()
-    .max(19, "Número deve ter no máximo 19 caracteres") // Aumentado para suportar formatação com espaços
-    .optional(),
   limit: z.number().min(0, "Limite deve ser positivo").optional().default(0),
   dueDay: z
     .number()
@@ -48,10 +44,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, number, limit, dueDay } = parsed.data;
-
-    // Remove espaços e caracteres especiais do número do cartão
-    const cleanNumber = number?.replace(/\s/g, "") || "";
+    const { name, limit, dueDay } = parsed.data;
 
     // Verifica se já existe um cartão com o mesmo nome para o usuário
     const existingCard = await prisma.card.findFirst({
@@ -72,7 +65,6 @@ export async function POST(req: Request) {
     const newCard = await prisma.card.create({
       data: {
         name,
-        number: cleanNumber,
         limit,
         dueDay,
         userId,
@@ -80,7 +72,6 @@ export async function POST(req: Request) {
       select: {
         id: true,
         name: true,
-        number: true,
         limit: true,
         dueDay: true,
       },

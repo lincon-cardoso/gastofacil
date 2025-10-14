@@ -82,7 +82,6 @@ model Transaction {
 model Card {
   id     String @id @default(uuid())
   name   String @db.VarChar(255)
-  number String @db.VarChar(16)
   limit  Float
   dueDay Int
   userId String

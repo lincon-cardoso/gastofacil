@@ -17,7 +17,6 @@ export default function AddCardModal({ open, onClose }: Props) {
     const formData = new FormData(e.currentTarget);
     const data = {
       name: formData.get("name") as string,
-      number: formData.get("number") as string,
       limit: parseFloat(formData.get("limit") as string) || 0,
       dueDay: parseInt(formData.get("dueDay") as string) || 1,
     };
@@ -48,14 +47,6 @@ export default function AddCardModal({ open, onClose }: Props) {
     }
   };
 
-  const formatCardNumber = (value: string) => {
-    // Remove todos os caracteres não numéricos
-    const cleaned = value.replace(/\D/g, "");
-    // Adiciona espaços a cada 4 dígitos
-    const formatted = cleaned.replace(/(\d{4})(?=\d)/g, "$1 ");
-    return formatted;
-  };
-
   return (
     <BaseModal
       open={open}
@@ -75,20 +66,6 @@ export default function AddCardModal({ open, onClose }: Props) {
               placeholder="Ex: Nubank"
               required
               disabled={loading}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="number">Número</label>
-            <input
-              id="number"
-              name="number"
-              placeholder="#### #### #### ####"
-              maxLength={19}
-              disabled={loading}
-              onChange={(e) => {
-                e.target.value = formatCardNumber(e.target.value);
-              }}
             />
           </div>
 

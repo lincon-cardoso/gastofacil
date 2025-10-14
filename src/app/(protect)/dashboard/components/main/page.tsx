@@ -68,7 +68,7 @@ export default function Main() {
           />
           {/* Card de orçamentos - limites planejados */}
           <Card
-            title="Orçamentos"
+            title="Total Faturas de cartões"
             value={`R$ ${totalOrcamentoCartao.toFixed(2)}`}
             description="Total planejado"
             icon={<GoCreditCard />}
