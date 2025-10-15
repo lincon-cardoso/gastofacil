@@ -3,9 +3,9 @@
 import {
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
+  // PieChart,
+  // Pie,
+  // Cell,
   Tooltip,
   ResponsiveContainer,
   XAxis,
@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import React from "react";
 import "./Charts.scss"; // Importação do arquivo SCSS
+import ListaCategorias from "@/app/(protect)/dashboard/components/main/components/Charts/Components/listaCategorias";
 
 // Dados mockados – substitua pelos reais quando integrar com sua API
 const lineData = [
@@ -26,13 +27,13 @@ const lineData = [
   { name: "Jun", receitas: 7000, despesas: 5000 },
 ];
 
-const pieData = [
-  { name: "Lazer", value: 1000 },
-  { name: "Mercado", value: 900 },
-  { name: "Moradia", value: 300 },
-  { name: "Saúde", value: 200 },
-  { name: "Transporte", value: 100 },
-];
+// const pieData = [
+//   { name: "Lazer", value: 1000 },
+//   { name: "Mercado", value: 900 },
+//   { name: "Moradia", value: 300 },
+//   { name: "Saúde", value: 200 },
+//   { name: "Transporte", value: 100 },
+// ];
 
 export default function Charts() {
   return (
@@ -67,7 +68,8 @@ export default function Charts() {
       {/* Gráfico de Pizza */}
       <div className="pie-chart">
         <ResponsiveContainer>
-          <PieChart>
+
+          {/* <PieChart>
             <Pie
               data={pieData}
               dataKey="value"
@@ -93,7 +95,8 @@ export default function Charts() {
               formatter={(value: number) => `R$ ${value.toLocaleString()}`}
             />
             <Legend />
-          </PieChart>
+          </PieChart> */}
+          <ListaCategorias />
         </ResponsiveContainer>
       </div>
     </div>
