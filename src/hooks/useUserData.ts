@@ -80,6 +80,7 @@ export function useUserData() {
     totalTransacoes: dashboardData?.totalTransacoes || 0,
     saldoAtual: dashboardData?.saldoAtual || 0,
     totalOrcamentoCartao: dashboardData?.totalOrcamentoCartao || 0,
+    
     refreshDashboard,
   };
 }
