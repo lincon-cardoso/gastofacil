@@ -47,12 +47,12 @@ export default function Modals({
       <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)} />
 
       <AddCardModal
-        open={!!addCardOpen}
+        isOpen={!!addCardOpen}
         onClose={() => setAddCardOpen?.(false)}
       />
 
       <CreateGoalModal
-        open={!!createGoalOpen}
+        isOpen={!!createGoalOpen}
         onClose={() => setCreateGoalOpen?.(false)}
       />
 
@@ -65,7 +65,7 @@ export default function Modals({
         onClose={() => setProfileModalOpen?.(false)}
       />
       <CreateCategoryModal
-        open={!!createCategoryOpen}
+        isOpen={!!createCategoryOpen}
         onClose={() => setCreateCategoryOpen?.(false)}
       />
     </>

@@ -65,6 +65,9 @@ export async function GET(request: Request) {
       case "metas":
         return getMetas(userId);
 
+      case "cards":
+        return getCards(userId);
+
       default:
         // Retorna dados completos do dashboard
         return getDashboardData(userId);
@@ -112,14 +115,15 @@ async function getDashboardData(userId: string) {
           limit: true,
           dueDay: true,
         },
-      })
-
+      }),
     ]);
 
     // Total de orcamento cartao
 
-    const totalOrcamentoCartao = cards.reduce((sum, c) => sum + Number(c.limit), 0);
-
+    const totalOrcamentoCartao = cards.reduce(
+      (sum, c) => sum + Number(c.limit),
+      0
+    );
 
     const totalReceita = budget.reduce((sum, b) => sum + Number(b.amount), 0);
     // somar todas as transacoes do usuario
@@ -215,20 +219,44 @@ async function getTransactions(userId: string) {
 // Função para buscar metas
 async function getMetas(userId: string) {
   try {
-    const budgets = await prisma.budget.findMany({
+    const metas = await prisma.goal.findMany({
       where: { userId },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         name: true,
-        amount: true,
+        targetAmount: true,
+        currentAmount: true,
+        deadline: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
-    return NextResponse.json(budgets);
+    return NextResponse.json(metas);
   } catch (error) {
     console.error("Erro ao buscar metas:", error);
+    throw error;
+  }
+}
+
+// Função para buscar cartões
+async function getCards(userId: string) {
+  try {
+    const cards = await prisma.card.findMany({
+      where: { userId },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        limit: true,
+        dueDay: true,
+      },
+    });
+
+    return NextResponse.json(cards);
+  } catch (error) {
+    console.error("Erro ao buscar cartões:", error);
     throw error;
   }
 }
