@@ -9,14 +9,16 @@ export function closeModal(setModalOpen: Dispatch<SetStateAction<boolean>>) {
   setModalOpen(false);
 }
 
-export function openFilters(setFiltersOpen: Dispatch<SetStateAction<boolean>>) {
-  setFiltersOpen(true);
+export function handleAddToGoals(
+  setAddToGoalsOpen: Dispatch<SetStateAction<boolean>>
+) {
+  setAddToGoalsOpen(true);
 }
 
-export function closeFilters(
-  setFiltersOpen: Dispatch<SetStateAction<boolean>>
+export function closeAddToGoals(
+  setAddToGoalsOpen: Dispatch<SetStateAction<boolean>>
 ) {
-  setFiltersOpen(false);
+  setAddToGoalsOpen(false);
 }
 
 export async function handleLogout() {

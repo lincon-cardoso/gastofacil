@@ -1,18 +1,18 @@
 "use client";
 import React from "react";
 import TransactionModal from "./TransactionModal";
-import FiltersModal from "./FiltersModal";
 import AddCardModal from "./AddCardModal";
 import CreateGoalModal from "./CreateGoalModal";
 import ProfileModal from "./ProfileModal";
 import CreateMonthlyBudgetModal from "./CreateMonthlyBudgetModal";
 import CreateCategoryModal from "./CreateCategoryModal";
+import AddToGoalsModal from "./AddToGoalsModal";
 
 type ModalsProps = {
   modalOpen: boolean;
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  filtersOpen: boolean;
-  setFiltersOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  addToGoalsOpen: boolean;
+  setAddToGoalsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   addCardOpen?: boolean;
   setAddCardOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   createGoalOpen?: boolean;
@@ -28,8 +28,8 @@ type ModalsProps = {
 export default function Modals({
   modalOpen,
   setModalOpen,
-  filtersOpen,
-  setFiltersOpen,
+  addToGoalsOpen,
+  setAddToGoalsOpen,
   addCardOpen,
   setAddCardOpen,
   createGoalOpen,
@@ -44,7 +44,10 @@ export default function Modals({
   return (
     <>
       <TransactionModal open={modalOpen} onClose={() => setModalOpen(false)} />
-      <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+      <AddToGoalsModal
+        open={addToGoalsOpen}
+        onClose={() => setAddToGoalsOpen(false)}
+      />
 
       <AddCardModal
         isOpen={!!addCardOpen}

@@ -1,20 +1,20 @@
 import React from "react";
 import EventIcon from "@mui/icons-material/Event";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import FlagIcon from "@mui/icons-material/Flag";
+import SavingsIcon from "@mui/icons-material/Savings";
 
 export type IconName =
   | "Event"
-  | "FilterList"
   | "Add"
   | "Logout"
   | "AccountCircle"
   | "CreditCard"
-  | "Flag";
+  | "Flag"
+  | "Savings";
 
 export function resolveIcon(icon?: IconName | React.ReactNode) {
   if (!icon) return undefined;
@@ -22,8 +22,6 @@ export function resolveIcon(icon?: IconName | React.ReactNode) {
   switch (icon) {
     case "Event":
       return React.createElement(EventIcon);
-    case "FilterList":
-      return React.createElement(FilterListIcon);
     case "Add":
       return React.createElement(AddIcon);
     case "Logout":
@@ -34,6 +32,8 @@ export function resolveIcon(icon?: IconName | React.ReactNode) {
       return React.createElement(CreditCardIcon);
     case "Flag":
       return React.createElement(FlagIcon);
+    case "Savings":
+      return React.createElement(SavingsIcon);
     default:
       return undefined;
   }

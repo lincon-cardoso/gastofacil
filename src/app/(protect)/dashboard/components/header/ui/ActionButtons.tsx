@@ -24,7 +24,6 @@ type ActionButtonsProps = {
 
 const defaultItems: ActionButtonItem[] = [
   { label: "Setembro/2025", variant: "outlined", startIcon: "Event" },
-  { label: "Filtros", variant: "outlined", startIcon: "FilterList" },
   { label: "Nova transação", variant: "contained", startIcon: "Add" },
 ];
 

@@ -6,7 +6,7 @@ import styles from "./Header.module.scss";
 import ActionButtons from "@/app/(protect)/dashboard/components/header/ui/ActionButtons";
 import {
   handleAction,
-  openFilters,
+  handleAddToGoals,
   handleLogout,
 } from "@/app/(protect)/dashboard/components/header/utils/headerFunctions";
 import Modals from "@/app/(protect)/dashboard/components/header/modals/Modals";
@@ -14,7 +14,7 @@ import CreateMenu from "@/app/(protect)/dashboard/components/header/ui/CreateMen
 
 export default function Header() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [addToGoalsOpen, setAddToGoalsOpen] = useState(false);
   const [addCardOpen, setAddCardOpen] = useState(false);
   const [createGoalOpen, setCreateGoalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -48,10 +48,10 @@ export default function Header() {
                 onClick: () => handleAction(setModalOpen),
               },
               {
-                label: "Filtros",
+                label: "Adicionar às Metas",
                 variant: "outlined",
-                startIcon: "FilterList",
-                onClick: () => openFilters(setFiltersOpen),
+                startIcon: "Savings",
+                onClick: () => handleAddToGoals(setAddToGoalsOpen),
               },
               {
                 label: "Perfil",
@@ -79,8 +79,8 @@ export default function Header() {
       <Modals
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
-        filtersOpen={filtersOpen}
-        setFiltersOpen={setFiltersOpen}
+        addToGoalsOpen={addToGoalsOpen}
+        setAddToGoalsOpen={setAddToGoalsOpen}
         addCardOpen={addCardOpen}
         setAddCardOpen={setAddCardOpen}
         createGoalOpen={createGoalOpen}
