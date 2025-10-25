@@ -1,15 +1,16 @@
+import { useSessionData } from "@/hooks/useSession";
 import styles from "./Metas.module.scss";
 
 export default function MetasPage() {
-  const metas = [
-    { categoria: "Mercado", utilizado: 280, total: 1200 },
-    { categoria: "Transporte", utilizado: 520, total: 600 },
-    { categoria: "Lazer", utilizado: 180, total: 400 },
-  ];
+  const { session, isLoading, isError } = useSessionData();
+
+  if (isLoading) return <div>Carregando metas...</div>;
+  if (isError) return <div>Erro ao carregar metas</div>;
+  if (!session?.metas) return <div>Nenhuma meta encontrada</div>;
 
   return (
     <main className={styles.container}>
-      {metas.map((meta, index) => (
+      {session.metas.map((meta, index) => (
         <div key={index} className={styles.metaCard}>
           <h3>{meta.categoria}</h3>
           <p>Utilizado: R$ {meta.utilizado.toFixed(2)}</p>

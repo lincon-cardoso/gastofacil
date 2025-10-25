@@ -145,14 +145,22 @@ export async function DELETE(
       );
     }
 
-    // Exclui o orçamento do banco de dados
-    await prisma.budget.delete({
-      where: { id },
+    // Exclui primeiro todas as transações associadas ao orçamento e depois o orçamento
+    await prisma.$transaction(async (tx) => {
+      // Deleta todas as transações associadas ao orçamento
+      await tx.transaction.deleteMany({
+        where: { budgetId: id },
+      });
+
+      // Deleta o orçamento
+      await tx.budget.delete({
+        where: { id },
+      });
     });
 
     // Retorna sucesso
     return NextResponse.json(
-      { message: "Orçamento excluído com sucesso" },
+      { message: "Orçamento e transações associadas excluídos com sucesso" },
       { status: 200 }
     );
   } catch (error) {
@@ -164,6 +172,12 @@ export async function DELETE(
         return NextResponse.json(
           { error: "Orçamento não encontrado" },
           { status: 404 }
+        );
+      }
+      if (error.code === "P2003") {
+        return NextResponse.json(
+          { error: "Não é possível excluir o orçamento devido a dependências" },
+          { status: 409 }
         );
       }
     }

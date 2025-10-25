@@ -1,21 +1,32 @@
 import React from "react";
+import { useSessionData } from "@/hooks/useSession";
 import styles from "./OrcamentoList.module.scss";
 
-type Orcamento = {
-  categoria: string;
-  utilizado: number;
-  total: number;
-};
+const OrcamentoList: React.FC = () => {
+  const { session, isLoading, isError } = useSessionData();
 
-type OrcamentoListProps = {
-  orcamentos: Orcamento[];
-};
+  if (isLoading) return <div>Carregando orçamentos...</div>;
+  if (isError) return <div>Erro ao carregar orçamentos</div>;
 
-const OrcamentoList: React.FC<OrcamentoListProps> = ({ orcamentos }) => {
+  if (!session?.orcamentos || session.orcamentos.length === 0) {
+    return (
+      <div className={styles.orcamentos}>
+        <h2>Orçamentos do mês</h2>
+        <div className={styles.emptyState}>
+          <div>💰</div>
+          <p>Nenhum orçamento encontrado</p>
+          <span>
+            Crie alguns orçamentos para acompanhar seus gastos mensais
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.orcamentos}>
       <h2>Orçamentos do mês</h2>
-      {orcamentos.map((orcamento, index) => (
+      {session.orcamentos.map((orcamento, index) => (
         <div key={index} className={styles.orcamentoCard}>
           <div className={styles.orcamentoInfo}>
             <span>{orcamento.categoria}</span>

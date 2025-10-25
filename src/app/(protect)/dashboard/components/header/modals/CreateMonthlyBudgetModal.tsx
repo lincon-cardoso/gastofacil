@@ -5,6 +5,7 @@ import { createBudgetSchema } from "@/schemas/budget";
 import styles from "../Modal.module.scss";
 import { useSessionSWR } from "@/hooks/useSessionSWR";
 import { useBudgets } from "@/hooks/useBudgets";
+import { useSessionData } from "@/hooks/useSession";
 
 type CreateMonthlyBudgetModalProps = {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function CreateMonthlyBudgetModal({
   onSuccess,
 }: CreateMonthlyBudgetModalProps) {
   const { isLoading: sessionLoading } = useSessionSWR();
+  const { mutate: mutateSession } = useSessionData();
   const {
     budgets,
     isLoading: budgetsLoading,
@@ -94,6 +96,7 @@ export default function CreateMonthlyBudgetModal({
       setSuccess("Orçamento atualizado com sucesso.");
       handleCancelEdit();
       refreshBudgets();
+      mutateSession(); // Atualiza também o cache da sessão
     } catch (err: unknown) {
       setError((err as Error).message || "Erro desconhecido");
     } finally {
@@ -121,6 +124,7 @@ export default function CreateMonthlyBudgetModal({
 
       setSuccess("Orçamento excluído com sucesso.");
       refreshBudgets();
+      mutateSession(); // Atualiza também o cache da sessão
     } catch (err: unknown) {
       setError((err as Error).message || "Erro desconhecido");
     } finally {
@@ -171,6 +175,7 @@ export default function CreateMonthlyBudgetModal({
       setBudgetName("");
       setBudgetAmount("");
       refreshBudgets(); // Atualiza a lista de orçamentos
+      mutateSession(); // Atualiza também o cache da sessão
       onClose(); // Fecha o modal após o sucesso
       if (onSuccess) onSuccess();
     } catch (err: unknown) {

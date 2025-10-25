@@ -7,7 +7,7 @@
     color: aliceblue;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
 
     h2 {
         font-size: 1.5rem;
@@ -43,6 +43,33 @@
         span {
             font-size: 0.9rem;
             color: #a1a1aa;
+        }
+    }
+
+    .emptyState {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 300px;
+        text-align: center;
+        gap: 12px;
+
+        div {
+            font-size: 48px;
+        }
+
+        p {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        span {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
         }
     }
 }

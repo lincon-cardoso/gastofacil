@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import { createCategorySchema } from "@/schemas/category";
 import { extractUserId } from "@/utils/auth";
+import { Prisma } from "@prisma/client";
 
 // PUT - Atualizar categoria
 export async function PUT(
@@ -115,26 +116,40 @@ export async function DELETE(
       );
     }
 
-    // Verifica se há transações associadas a esta categoria
-    const transactionsCount = await prisma.transaction.count({
-      where: { categoryId: id },
-    });
+    // Remove a categoria das transações associadas e depois exclui a categoria
+    await prisma.$transaction(async (tx) => {
+      // Remove a associação da categoria das transações (seta categoryId como null)
+      await tx.transaction.updateMany({
+        where: { categoryId: id },
+        data: { categoryId: null },
+      });
 
-    if (transactionsCount > 0) {
-      return NextResponse.json(
-        { error: "Não é possível excluir categoria com transações associadas" },
-        { status: 409 }
-      );
-    }
-
-    // Exclui a categoria
-    await prisma.expenseCategory.delete({
-      where: { id },
+      // Exclui a categoria
+      await tx.expenseCategory.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json({ message: "Categoria excluída com sucesso" });
   } catch (error) {
     console.error("Erro ao excluir categoria:", error);
+
+    // Trata erros conhecidos do Prisma
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Categoria não encontrada" },
+          { status: 404 }
+        );
+      }
+      if (error.code === "P2003") {
+        return NextResponse.json(
+          { error: "Não é possível excluir a categoria devido a dependências" },
+          { status: 409 }
+        );
+      }
+    }
+
     return NextResponse.json(
       { error: "Erro ao excluir categoria" },
       { status: 500 }

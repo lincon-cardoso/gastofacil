@@ -18,6 +18,21 @@ export default function ListaCategorias() {
     return <div className="lista-categorias__error">Erro: {error.message}</div>;
   }
 
+  if (!categories || categories.length === 0) {
+    return (
+      <div className={styles["lista-categorias"]}>
+        <h2 className={styles["lista-categorias__title"]}>
+          Lista de Categorias
+        </h2>
+        <div className={styles["lista-categorias__empty"]}>
+          <div>📁</div>
+          <p>Nenhuma categoria encontrada</p>
+          <span>Adicione algumas categorias para organizar seus gastos</span>
+        </div>
+      </div>
+    );
+  }
+
   const startIndex = currentPage * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedCategories = categories.slice(startIndex, endIndex);
