@@ -1,3 +1,5 @@
+@use './Resposive.module.scss';
+
 .header {
     padding: 1.5rem 0;
     border-bottom: 1px solid #3f3f46;
@@ -18,33 +20,33 @@
         .brandContainer {
             display: flex;
             align-items: center;
-            justify-content: space-around;
-            width: 350px;
-            gap: 4rem; // Ajusta o espaçamento entre os elementos
-            padding: 0.5rem; // Adiciona espaçamento interno para melhorar a aparência
+            justify-content: flex-start;
+            gap: 1rem; // Reduzido para dar espaço ao botão toggle
+            padding: 0.5rem;
             border-radius: 0.5rem;
 
             .brandLink {
                 display: flex;
                 align-items: center;
-                text-decoration: none; // Remove sublinhado do link
+                text-decoration: none;
+                gap: 0.75rem; // Espaçamento entre logo, título e badge
             }
 
             .logoBackground {
-                width: 2.5rem; // Ajusta o tamanho para maior destaque
+                width: 2.5rem;
                 height: 2.5rem;
                 display: grid;
                 place-items: center;
-                border-radius: 0.5rem; // Suaviza os cantos
+                border-radius: 0.5rem;
                 background-color: #064e3b;
 
                 img {
-                    border-radius: 50%; // Torna a imagem circular
+                    border-radius: 50%;
                 }
             }
 
             .title {
-                font-size: 1.75rem; // Aumenta o tamanho da fonte para maior destaque
+                font-size: 1.75rem;
                 font-weight: bold;
                 color: #fff;
                 letter-spacing: -0.02em;
@@ -52,12 +54,36 @@
 
             .badge {
                 margin-left: 0.5rem;
-                padding: 0.25rem 0.75rem; // Ajusta o espaçamento interno
-                font-size: 0.85rem; // Ajusta o tamanho da fonte
+                padding: 0.25rem 0.75rem;
+                font-size: 0.85rem;
                 font-weight: 600;
                 color: #f4f4f5;
                 background-color: #064e3b;
-                border-radius: 1.5rem; // Suaviza os cantos
+                border-radius: 1.5rem;
+            }
+
+            .toggleContainer {
+                display: none; // Oculto por padrão
+                margin-left: auto; // Empurra o botão para a direita dentro do brandContainer
+
+                .toggleButton {
+                    color: #fff;
+                    background-color: rgba(255, 255, 255, 0.1);
+                    border: 1px solid #374151;
+                    border-radius: 0.5rem;
+                    padding: 0.5rem;
+                    min-width: auto;
+                    width: 40px;
+                    height: 40px;
+
+                    &:hover {
+                        background-color: rgba(255, 255, 255, 0.15);
+                    }
+
+                    svg {
+                        font-size: 1.25rem;
+                    }
+                }
             }
         }
 
