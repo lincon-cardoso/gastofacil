@@ -107,4 +107,20 @@
             color: #f44336; // Vermelho para valores negativos
         }
     }
+
+    .emptyState {
+        text-align: center;
+        padding: 40px 20px;
+        color: #ccc;
+
+        p {
+            margin: 10px 0;
+            
+            &:first-child {
+                font-size: 1.2rem;
+                font-weight: 600;
+                color: #fff;
+            }
+        }
+    }
 }
