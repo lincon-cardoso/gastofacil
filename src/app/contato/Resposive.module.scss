@@ -1,0 +1,28 @@
+@media (max-width: 1300px) {
+        .contatoSection.contatoSection {
+        max-width: 100%;
+        padding: 60px 1.5rem;
+    }
+}
+
+@media (max-width: 940px) {
+    .contatoSection.contatoSection {
+        flex-direction: column;
+        padding: 40px 1.5rem;
+
+        .textContainer {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contatoButtons {
+            justify-content: center;
+        }
+
+        .imageContainer {
+            width: 100%;
+            max-width: 400px;
+        }
+    }
+}
