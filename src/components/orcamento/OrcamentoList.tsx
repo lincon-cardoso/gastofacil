@@ -31,10 +31,11 @@ const OrcamentoList: React.FC<OrcamentoListProps> = ({ orcamentos }) => {
     <div className={styles.orcamentos}>
       <h2>Orçamentos do mês</h2>
       {orcamentos.map((orcamento, index) => {
-        const progressPercentage = orcamento.total > 0 
-          ? (orcamento.utilizado / orcamento.total) * 100 
-          : 0;
-        
+        const progressPercentage =
+          orcamento.total > 0
+            ? (orcamento.utilizado / orcamento.total) * 100
+            : 0;
+
         return (
           <div key={index} className={styles.orcamentoCard}>
             <div className={styles.orcamentoInfo}>

@@ -7,7 +7,7 @@ export default function Transacoes() {
   const [filter, setFilter] = useState("Todos");
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const { transactions, isLoading, isError } = useTransactions();
 
   // Estados de carregamento e erro
@@ -20,29 +20,31 @@ export default function Transacoes() {
   }
 
   // Converte transações para o formato esperado
-  const formattedTransactions = transactions.map(transaction => ({
+  const formattedTransactions = transactions.map((transaction) => ({
     id: transaction.id,
     description: transaction.description || "Sem descrição",
     category: transaction.category?.name || "Sem categoria",
     date: new Date(transaction.date).toLocaleDateString("pt-BR", {
       day: "2-digit",
-      month: "2-digit"
+      month: "2-digit",
     }),
-    value: transaction.amount
+    value: transaction.amount,
   }));
 
   // Filtra transações baseado no filtro selecionado e termo de busca
   const filteredTransactions = formattedTransactions.filter((transaction) => {
-    const matchesFilter = 
-      filter === "Todos" || 
+    const matchesFilter =
+      filter === "Todos" ||
       (filter === "Receita" && transaction.value > 0) ||
       (filter === "Despesa" && transaction.value < 0);
-    
-    const matchesSearch = 
+
+    const matchesSearch =
       searchTerm === "" ||
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.description
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesFilter && matchesSearch;
   });
 
@@ -118,7 +120,9 @@ export default function Transacoes() {
                 <td>{transaction.id}</td>
                 <td>{transaction.description}</td>
                 <td>
-                  <span className={styles.category}>{transaction.category}</span>
+                  <span className={styles.category}>
+                    {transaction.category}
+                  </span>
                 </td>
                 <td>{transaction.date}</td>
                 <td

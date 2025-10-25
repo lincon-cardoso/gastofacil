@@ -12,7 +12,9 @@ const fetcher = async (url: string): Promise<DashboardData> => {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data?.error || `Falha ao carregar dados do dashboard (${res.status})`);
+    throw new Error(
+      data?.error || `Falha ao carregar dados do dashboard (${res.status})`
+    );
   }
   return res.json();
 };

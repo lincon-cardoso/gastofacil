@@ -6,30 +6,38 @@ import { useBudgets } from "@/hooks/useBudgets";
 import { useCards } from "@/hooks/useCards";
 
 export default function Orcamento() {
-  const { budgets, isLoading: budgetsLoading, error: budgetsError } = useBudgets();
+  const {
+    budgets,
+    isLoading: budgetsLoading,
+    error: budgetsError,
+  } = useBudgets();
   const { cards, isLoading: cardsLoading, error: cardsError } = useCards();
 
   // Converte orçamentos para o formato esperado pelo OrcamentoList
-  const orcamentos = budgets.map(budget => ({
+  const orcamentos = budgets.map((budget) => ({
     categoria: budget.name,
     utilizado: 0, // TODO: Calcular valor utilizado baseado nas transações
-    total: budget.amount
+    total: budget.amount,
   }));
 
   // Converte cartões para faturas
-  const faturas = cards.map(card => ({
+  const faturas = cards.map((card) => ({
     banco: card.name,
     valor: card.limit,
-    vencimento: `${card.dueDay}/${new Date().getMonth() + 1}`
+    vencimento: `${card.dueDay}/${new Date().getMonth() + 1}`,
   }));
 
   // Estados de carregamento e erro
   if (budgetsLoading || cardsLoading) {
-    return <div className={styles.orcamentoContainer}>Carregando orçamentos...</div>;
+    return (
+      <div className={styles.orcamentoContainer}>Carregando orçamentos...</div>
+    );
   }
 
   if (budgetsError || cardsError) {
-    return <div className={styles.orcamentoContainer}>Erro ao carregar dados</div>;
+    return (
+      <div className={styles.orcamentoContainer}>Erro ao carregar dados</div>
+    );
   }
 
   return (
