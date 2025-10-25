@@ -2,7 +2,7 @@
 
 import styles from "./Orcamento.module.scss";
 import OrcamentoList from "@/components/orcamento/OrcamentoList";
-import { useBudgets } from "@/hooks/useBudgets";
+import { useBudgetsWithUsage } from "@/hooks/useBudgetsWithUsage";
 import { useCards } from "@/hooks/useCards";
 
 export default function Orcamento() {
@@ -10,13 +10,13 @@ export default function Orcamento() {
     budgets,
     isLoading: budgetsLoading,
     error: budgetsError,
-  } = useBudgets();
+  } = useBudgetsWithUsage();
   const { cards, isLoading: cardsLoading, error: cardsError } = useCards();
 
   // Converte orçamentos para o formato esperado pelo OrcamentoList
   const orcamentos = budgets.map((budget) => ({
     categoria: budget.name,
-    utilizado: 0, // TODO: Calcular valor utilizado baseado nas transações
+    utilizado: budget.used,
     total: budget.amount,
   }));
 
