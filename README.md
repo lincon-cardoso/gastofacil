@@ -1,169 +1,199 @@
 # GastoFácil
 
-O **GastoFácil** é uma aplicação web moderna desenvolvida com o framework **Next.js**, projetada para facilitar o gerenciamento de finanças pessoais. Com foco em simplicidade, segurança e escalabilidade, o projeto oferece uma interface amigável e responsiva, além de funcionalidades avançadas para controle financeiro.
+Uma aplicação web moderna para gerenciamento de finanças pessoais, desenvolvida com **Next.js 15**, **TypeScript** e **Sass**.
 
 ---
 
-## 🚀 Funcionalidades Principais
+## 🚀 Tecnologias Utilizadas
 
-- **Gerenciamento de Finanças**: Controle de despesas, receitas e orçamentos.
-- **Relatórios Visuais**: Gráficos e relatórios detalhados para análise financeira.
-- **Autenticação Segura**: Sistema de login e registro com suporte a sessões únicas.
-- **Planos de Assinatura**: Diferentes planos para atender às necessidades dos usuários.
-- **Interface Responsiva**: Design adaptado para dispositivos móveis e desktops.
-- **Integração Bancária (Beta)**: Sincronização com contas bancárias para maior automação.
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Next.js**: Framework React para aplicações web modernas.
-- **TypeScript**: Superset do JavaScript para tipagem estática.
-- **Sass**: Pré-processador CSS para estilos organizados e reutilizáveis.
-- **Prisma**: ORM para interação com o banco de dados.
-- **NextAuth**: Gerenciamento de autenticação e sessões.
-- **Upstash Redis**: Rate limiting e controle de sessões únicas.
-- **ESLint e Prettier**: Garantia de qualidade e formatação do código.
+- **Next.js 15** com App Router
+- **TypeScript** para tipagem estática
+- **Sass** para estilização
+- **ESLint** para qualidade de código
+- **Jest** com Testing Library para testes
+- **Prisma** como ORM
+- **Turbopack** para desenvolvimento rápido
 
 ---
 
-## 🔒 Proteções e Boas Práticas
-
-- **CSP (Content Security Policy)**: Configuração rigorosa para evitar ataques XSS.
-- **Rate Limiting**: Limitação de requisições para evitar abusos.
-- **Sessões Únicas**: Controle de login simultâneo por usuário.
-- **Criptografia**: Dados protegidos em trânsito e em repouso.
-- **LGPD e GDPR Compliance**: Conformidade com regulamentações de proteção de dados.
-- **Middleware de Segurança**: Validação de tokens, cabeçalhos e origens.
-
----
-
-## 📂 Estrutura do Projeto
-
-A estrutura do projeto segue o padrão recomendado pelo Next.js, com customizações para organização e escalabilidade:
+## � Estrutura do Projeto
 
 ```
-public/         # Arquivos públicos, como imagens e ícones
-src/            # Código-fonte principal
-  app/          # Páginas e layout principal
-  components/   # Componentes reutilizáveis
-  contexts/     # Contextos do React
-  hooks/        # Hooks customizados
-  services/     # Serviços e chamadas de API
-  styles/       # Estilos globais e específicos
-  types/        # Definições de tipos TypeScript
-  utils/        # Funções utilitárias
-prisma/         # Configurações e seed do banco de dados
+src/                 # Código-fonte principal (App Router)
+  app/              # Páginas e layouts do Next.js 15
+    (protect)/      # Rotas protegidas
+    api/            # API Routes
+    login/          # Página de login
+    register/       # Página de registro
+    planos/         # Página de planos
+    contato/        # Página de contato
+    sobre/          # Página sobre
+  components/       # Componentes reutilizáveis
+    Header/         # Cabeçalho da aplicação
+    footer/         # Rodapé
+    main/           # Componentes da página principal
+    orcamento/      # Componentes de orçamento
+  hooks/           # Hooks customizados
+  schemas/         # Schemas de validação
+  styles/          # Arquivos Sass globais e específicos
+  types/           # Definições de tipos TypeScript
+  utils/           # Funções utilitárias
+prisma/             # Schema e configurações do banco
+  migrations/       # Migrações do banco de dados
+public/             # Arquivos estáticos
+  assets/          # Assets da aplicação
+  favicons/        # Ícones de favoritos
+  icons/           # Ícones gerais
+  images/          # Imagens
+.github/            # Configurações do GitHub e Copilot
+coverage/           # Relatórios de cobertura de testes
 ```
 
 ---
 
-## ⚙️ Configuração e Instalação
+## ⚙️ Configuração e Desenvolvimento
 
 ### Pré-requisitos
 
-- **Node.js** (versão 18 ou superior)
-- **npm** (gerenciador de pacotes)
+- **Node.js** 18+
+- **npm**
 
-### Passos para rodar o projeto localmente
-
-1. Clone o repositório:
+### Instalação
 
 ```bash
+# Clone o repositório
 git clone https://github.com/lincon-cardoso/gastofacil.git
-```
 
-2. Instale as dependências:
+# Navegue para o diretório
+cd gastofacil
 
-```bash
+# Instale as dependências
 npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env.local
 ```
 
-3. Configure as variáveis de ambiente no arquivo `.env`:
-
-```env
-DATABASE_URL= # URL do banco de dados
-NEXTAUTH_SECRET= # Chave secreta para autenticação
-NEXTAUTH_URL= # URL pública da aplicação
-NEXT_PUBLIC_APP_URL= # URL pública para validações de CSRF
-UPSTASH_REDIS_REST_URL= # URL do Redis para rate limiting
-UPSTASH_REDIS_REST_TOKEN= # Token do Redis
-SECURITY_CSP_STRICT=true # (opcional) Ativa CSP rigorosa
-```
-
-4. Execute o servidor de desenvolvimento:
+### Scripts Disponíveis
 
 ```bash
+# Desenvolvimento (com Turbopack)
 npm run dev
+
+# Build de produção
+npm run build
+
+# Executar em produção
+npm run start
+
+# Linting
+npm run lint
+
+# Testes
+npm run test
+npm run test:watch
+
+# Cobertura de testes
+npm run test:coverage
 ```
-
-5. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
-
----
-
-## 📜 Scripts Disponíveis
-
-- `npm run dev` — Inicia o servidor de desenvolvimento.
-- `npm run build` — Gera a build de produção.
-- `npm run start` — Inicia o servidor em produção.
-- `npm run lint` — Executa o linter.
-- `npm run test` — Executa os testes.
-- `npm run test:watch` — Executa os testes em modo watch.
 
 ---
 
 ## 🧪 Testes
 
-O projeto utiliza **Jest** para testes unitários e de integração. Para rodar os testes:
+O projeto utiliza **Jest** e **Testing Library** com configuração TypeScript:
+
+- Configuração em [`jest.config.ts`](jest.config.ts)
+- Setup personalizado em [`jest.setup.ts`](jest.setup.ts)
+- Relatórios de cobertura em `/coverage`
 
 ```bash
+# Executar todos os testes
 npm run test
+
+# Modo watch para desenvolvimento
+npm run test:watch
 ```
 
 ---
 
-## 🌐 Deploy
+## 🔧 Configurações
 
-O deploy é realizado automaticamente no **Railway**, utilizando as configurações do arquivo `.env`. Para alternar entre ambientes:
+### TypeScript
 
-### Desenvolvimento Local
+- Configuração em [`tsconfig.json`](tsconfig.json)
+- Aliases de importação com `@/*`
+- Tipos do Next.js em [`next-env.d.ts`](next-env.d.ts)
 
-```bash
-npm run dev
-```
+### ESLint
 
-### Produção Local
+- Configuração moderna em [`eslint.config.mjs`](eslint.config.mjs)
+- Integração com TypeScript e Next.js
 
-```bash
-mv .env.local .env.local.disabled
-npm run dev
-mv .env.local.disabled .env.local
-```
+### Next.js
+
+- Configuração personalizada em [`next.config.ts`](next.config.ts)
+- App Router habilitado
+- Turbopack para desenvolvimento
+
+### Sass
+
+- Suporte nativo do Next.js
+- Organização de estilos em `src/styles/`
+- Módulos CSS para componentes
+
+### Banco de Dados
+
+- **Prisma** como ORM
+- Schema em [`prisma/schema.prisma`](prisma/schema.prisma)
+- Migrações versionadas
+- Seed de dados em [`prisma/seed.ts`](prisma/seed.ts)
+
+---
+
+## 🌐 Deploy e SEO
+
+- Configuração de sitemap em [`next-sitemap.config.cjs`](next-sitemap.config.cjs)
+- Middleware customizado em [`middleware.ts`](middleware.ts)
+- Otimizações de build automáticas
+- Suporte a robots.txt
+
+---
+
+## 🛡️ Segurança e Qualidade
+
+- **Middleware** para proteção de rotas
+- **TypeScript** para segurança de tipos
+- **ESLint** para qualidade de código
+- **Testes automatizados** com cobertura
+- **Variáveis de ambiente** seguras
+- **Rotas protegidas** com autenticação
+
+---
+
+## 🚦 Funcionalidades Implementadas
+
+Com base na estrutura do projeto, as seguintes funcionalidades estão disponíveis:
+
+- **Sistema de Autenticação**: Login e registro de usuários
+- **Dashboard Protegido**: Área restrita para usuários autenticados
+- **Gerenciamento de Orçamentos**: Controle de orçamentos pessoais
+- **Sistema de Cartões**: Gestão de cartões de crédito/débito
+- **Categorização**: Organização por categorias
+- **Metas Financeiras**: Definição e acompanhamento de metas
+- **Transações**: Registro e controle de transações
+- **API Completa**: Endpoints para todas as funcionalidades
+- **Interface Responsiva**: Design adaptado para todos os dispositivos
 
 ---
 
 ## 📋 Contribuição
 
-1. Faça um fork do repositório.
-2. Crie uma branch para sua feature ou correção de bug:
-
-```bash
-git checkout -b minha-feature
-```
-
-3. Faça commit das suas alterações:
-
-```bash
-git commit -m "Descrição da alteração"
-```
-
-4. Envie para o repositório remoto:
-
-```bash
-git push origin minha-feature
-```
-
-5. Abra um Pull Request explicando suas alterações.
+1. Fork o projeto
+2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit suas mudanças: `git commit -m 'Adiciona nova funcionalidade'`
+4. Push para a branch: `git push origin feature/nova-funcionalidade`
+5. Abra um Pull Request
 
 ---
 

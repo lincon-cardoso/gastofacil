@@ -1,7 +1,8 @@
+// Esquemas de validação usando Zod para formulários e APIs
 import { z } from "zod";
 import disposableEmailDomains from "disposable-email-domains";
 
-// Esquema compartilhado de senha (regras fortes)
+// Esquema compartilhado de senha com regras de segurança fortes
 export const passwordSchema = z
   .string()
   .min(8, "A senha deve ter pelo menos 8 caracteres")
@@ -11,32 +12,33 @@ export const passwordSchema = z
   .regex(/[0-9]/, "A senha deve conter pelo menos um número")
   .regex(/[@$!%*?&]/, "A senha deve conter pelo menos um caractere especial");
 
-// Esquema completo usado no cliente (inclui confirmação e termos)
+// Esquema completo para registro no cliente (inclui confirmação e aceite de termos)
 const registerSchema = z
   .object({
     name: z
       .string()
       .min(2, "O nome deve ter pelo menos 2 caracteres")
       .max(255, "O nome é muito longo")
-      .trim(),
+      .trim(), // Remove espaços em branco
     email: z
       .string()
       .min(1, "E-mail é obrigatório")
       .email("E-mail inválido")
       .max(255, "E-mail é muito longo")
-      .transform((v) => v.trim().toLowerCase()),
+      .transform((v) => v.trim().toLowerCase()), // Normaliza o email
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "Você deve aceitar os termos",
     }),
   })
+  // Validação customizada para verificar se as senhas coincidem
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",
-    path: ["confirmPassword"],
+    path: ["confirmPassword"], // Mostra erro no campo de confirmação
   });
 
-// Esquema específico para a API (não exige campos que o cliente não envia)
+// Esquema simplificado para API de registro (sem campos que o cliente não envia)
 const registerApiSchema = z.object({
   name: z
     .string()
@@ -51,6 +53,7 @@ const registerApiSchema = z.object({
   password: passwordSchema,
 });
 
+// Esquema para validação de login (regras mais flexíveis para senha)
 const loginSchema = z.object({
   email: z
     .string()
@@ -60,27 +63,32 @@ const loginSchema = z.object({
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 
+// Tipo TypeScript gerado a partir do esquema de registro
 type FormData = z.infer<typeof registerSchema>;
 
+// Interface para definir estrutura de erros nos formulários
 interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
   termsAccepted?: string;
-  general?: string; // Erros gerais
+  general?: string; // Erros gerais da aplicação
 }
 
 export { registerSchema, registerApiSchema, loginSchema };
 export type { FormData, FormErrors };
 
+// Função para verificar se um email é de um domínio descartável
 export const isDisposableEmail = (email: string): boolean => {
-  const domain = email.split("@")[1];
-  return disposableEmailDomains.includes(domain);
+  const domain = email.split("@")[1]; // Extrai o domínio do email
+  return disposableEmailDomains.includes(domain); // Verifica na lista de domínios descartáveis
 };
 
+// Função para validação completa de email (formato correto + não descartável)
 export const validateEmail = (email: string): boolean => {
   return (
-    !isDisposableEmail(email) && z.string().email().safeParse(email).success
+    !isDisposableEmail(email) && // Não é email descartável
+    z.string().email().safeParse(email).success // Formato de email válido
   );
 };

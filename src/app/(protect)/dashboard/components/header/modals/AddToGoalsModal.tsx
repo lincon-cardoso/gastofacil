@@ -10,6 +10,9 @@ import BaseModal from "./BaseModal";
 import styles from "../Modal.module.scss";
 import { useMetas } from "@/hooks/useMetas";
 import { useAddAmountToGoal } from "@/hooks/useAddAmountToGoal";
+import { useAddTransaction } from "@/hooks/useAddTransaction";
+import { useBudgets } from "@/hooks/useBudgets";
+import { useCategories } from "@/hooks/useCategories";
 
 type Props = {
   open: boolean;
@@ -35,6 +38,9 @@ export default function AddToGoalsModal({ open, onClose }: Props) {
     isLoading: addingAmount,
     error,
   } = useAddAmountToGoal();
+  const { addTransaction, isLoading: addingTransaction } = useAddTransaction();
+  const { budgets } = useBudgets();
+  const { categories } = useCategories();
 
   // Reset form quando modal abrir
   useEffect(() => {
@@ -131,20 +137,69 @@ export default function AddToGoalsModal({ open, onClose }: Props) {
         return;
       }
 
-      const result = await addAmountToGoal(formData.selectedGoal, numAmount);
+      try {
+        // Primeiro adiciona o valor à meta
+        const goalResult = await addAmountToGoal(
+          formData.selectedGoal,
+          numAmount
+        );
 
-      if (result) {
-        setSuccessMessage(result.message);
-        setFormData({ selectedGoal: "", amount: "" });
+        if (goalResult) {
+          // Buscar uma categoria de "Investimentos" ou usar a primeira disponível
+          const investmentCategory = categories.find(
+            (cat) =>
+              cat.name.toLowerCase().includes("investimento") ||
+              cat.name.toLowerCase().includes("meta") ||
+              cat.name.toLowerCase().includes("poupança")
+          );
 
-        // Fechar modal após 2.5 segundos
-        setTimeout(() => {
-          setSuccessMessage("");
-          onClose();
-        }, 2500);
+          // Usar o primeiro orçamento disponível (você pode ajustar esta lógica)
+          const defaultBudget = budgets[0];
+
+          if (defaultBudget) {
+            // Criar a transação como despesa
+            const transactionData = {
+              description: `Investimento na meta: ${selectedGoalData?.name}`,
+              amount: numAmount,
+              budgetId: defaultBudget.id,
+              categoryId: investmentCategory?.id,
+              date: new Date().toISOString().split("T")[0],
+            };
+
+            await addTransaction(transactionData);
+
+            setSuccessMessage(
+              `${goalResult.message} Despesa de R$ ${numAmount.toFixed(2)} registrada automaticamente!`
+            );
+          } else {
+            setSuccessMessage(
+              `${goalResult.message} (Aviso: Nenhum orçamento encontrado para registrar a transação)`
+            );
+          }
+
+          setFormData({ selectedGoal: "", amount: "" });
+
+          // Fechar modal após 3 segundos
+          setTimeout(() => {
+            setSuccessMessage("");
+            onClose();
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Erro ao processar adição à meta:", error);
+        alert("Erro ao processar a operação. Tente novamente.");
       }
     },
-    [formData, selectedGoalData, remainingAmount, addAmountToGoal, onClose]
+    [
+      formData,
+      selectedGoalData,
+      remainingAmount,
+      addAmountToGoal,
+      addTransaction,
+      budgets,
+      categories,
+      onClose,
+    ]
   );
 
   const handleClose = useCallback(() => {
@@ -342,13 +397,14 @@ export default function AddToGoalsModal({ open, onClose }: Props) {
                 className={styles.saveButton}
                 disabled={
                   addingAmount ||
+                  addingTransaction ||
                   remainingAmount <= 0 ||
                   !formData.selectedGoal ||
                   !formData.amount
                 }
               >
-                {addingAmount ? (
-                  <>⏳ Adicionando...</>
+                {addingAmount || addingTransaction ? (
+                  <>⏳ Processando...</>
                 ) : (
                   <>💰 Adicionar à Meta</>
                 )}
@@ -358,7 +414,7 @@ export default function AddToGoalsModal({ open, onClose }: Props) {
                 type="button"
                 className={styles.closeButton}
                 onClick={handleClose}
-                disabled={addingAmount}
+                disabled={addingAmount || addingTransaction}
               >
                 ❌ Cancelar
               </button>

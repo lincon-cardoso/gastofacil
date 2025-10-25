@@ -1,10 +1,11 @@
+// Componente de formulário de login com validação e autenticação
 "use client";
 import React, { useState } from "react";
 import styles from "@/app/login/login.module.scss";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-// Esquema de validação para o formulário de login
+// Esquema de validação Zod para os dados de login
 const loginSchema = z.object({
   email: z.email("E-mail inválido.").nonempty("O campo e-mail é obrigatório."),
   password: z
@@ -14,31 +15,42 @@ const loginSchema = z.object({
 });
 
 export default function LoginForm() {
+  // Estado para armazenar os dados do formulário
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    rememberMe: false,
+    rememberMe: false, // Opção para manter o usuário logado
   });
+
+  // Estado para armazenar erros de validação
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Estado para controlar o carregamento durante o envio
   const [isLoading, setIsLoading] = useState(false);
+
+  // Estado para mensagem de sucesso
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Hook para navegação programática
   const router = useRouter();
 
+  // Função para lidar com mudanças nos campos do formulário
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : value, // Trata checkboxes de forma diferente
     }));
   };
 
+  // Função para lidar com o envio do formulário
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErrors({});
+    e.preventDefault(); // Previne o comportamento padrão do formulário
+    setErrors({}); // Limpa erros anteriores
     setSuccessMessage(null);
 
     try {
-      // Valida os dados do formulário
+      // Valida os dados do formulário usando Zod
       loginSchema.parse(formData);
 
       setIsLoading(true);
@@ -57,6 +69,7 @@ export default function LoginForm() {
 
       const result = await response.json();
 
+      // Trata resposta de erro da API
       if (!response.ok) {
         if (result.errors && typeof result.errors === "object") {
           setErrors(result.errors);
@@ -70,9 +83,10 @@ export default function LoginForm() {
       setIsLoading(false);
       setSuccessMessage("Login realizado com sucesso!");
 
-      // Redireciona para a página inicial após o login bem-sucedido
+      // Redireciona para a página inicial após login bem-sucedido
       router.push("/dashboard");
     } catch (err) {
+      // Trata erros de validação do Zod
       if (err instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         err.issues.forEach((issue) => {
@@ -81,6 +95,7 @@ export default function LoginForm() {
         });
         setErrors(fieldErrors);
       } else {
+        // Trata outros erros inesperados
         console.error("Erro inesperado:", err);
         setErrors({ general: "Erro interno do servidor." });
       }
