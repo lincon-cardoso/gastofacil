@@ -1,0 +1,12 @@
+// Media queries para responsividade do Header
+@media (max-width: 940px) {
+    .header.header {
+            .container{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+                
+            }
+        }
+}

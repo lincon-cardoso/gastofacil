@@ -1,3 +1,6 @@
+// Usa estilos responsivos
+@use './Resposive.module.scss';
+
 .heroSection {
     margin: 0 auto;
     padding: 2rem 1.5rem;
@@ -86,20 +89,19 @@
                     color: #000;
                 }
             }
-
-            .heroImageContainer {
-                flex: 1;
-                max-width: 588px;
-
-                img {
-                    width: 100%;
-                    height: auto;
-                    border-radius: 10px;
-                    border: 2px solid rgba(255, 255, 255, 0.2); // Borda sutil
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Sombra leve
-                }
-            }
         }
+    }
 
+    .heroImageContainer {
+        flex: 1;
+        max-width: 588px;
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2); // Borda sutil
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Sombra leve
+        }
     }
 }
