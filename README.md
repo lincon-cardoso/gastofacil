@@ -16,30 +16,49 @@ Uma aplicação web moderna para gerenciamento de finanças pessoais, desenvolvi
 
 ---
 
-## � Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 src/                 # Código-fonte principal (App Router)
   app/              # Páginas e layouts do Next.js 15
-    (protect)/      # Rotas protegidas
+    (protect)/      # Rotas protegidas por autenticação
+      dashboard/    # Dashboard principal
     api/            # API Routes
-    login/          # Página de login
-    register/       # Página de registro
-    planos/         # Página de planos
+      auth/         # Autenticação
+      budgets/      # CRUD de orçamentos
+      cards/        # CRUD de cartões
+      categories/   # CRUD de categorias
+      checkout/     # Processamento de pagamentos
+      dashboard/    # Dados do dashboard
+      metas/        # CRUD de metas
+      register/     # Registro de usuários
+      session/      # Gerenciamento de sessões
+      subscription/ # Gestão de assinaturas
+      transactions/ # CRUD de transações
+    checkout/       # Página de checkout
     contato/        # Página de contato
+    login/          # Página de login
+    planos/         # Página de planos
+    register/       # Página de registro
     sobre/          # Página sobre
   components/       # Componentes reutilizáveis
     Header/         # Cabeçalho da aplicação
     footer/         # Rodapé
     main/           # Componentes da página principal
     orcamento/      # Componentes de orçamento
+  config/           # Configurações da aplicação
+  contexts/         # Contexts do React
   hooks/           # Hooks customizados
-  schemas/         # Schemas de validação
+  register/        # Componentes de registro
+  schemas/         # Schemas de validação (Zod)
+  services/        # Serviços externos
   styles/          # Arquivos Sass globais e específicos
   types/           # Definições de tipos TypeScript
   utils/           # Funções utilitárias
 prisma/             # Schema e configurações do banco
   migrations/       # Migrações do banco de dados
+  seed.ts          # Dados iniciais
+  schema.prisma    # Schema do banco
 public/             # Arquivos estáticos
   assets/          # Assets da aplicação
   favicons/        # Ícones de favoritos
@@ -57,6 +76,7 @@ coverage/           # Relatórios de cobertura de testes
 
 - **Node.js** 18+
 - **npm**
+- **Banco de dados** compatível com Prisma (PostgreSQL, MySQL, SQLite)
 
 ### Instalação
 
@@ -72,6 +92,10 @@ npm install
 
 # Configure as variáveis de ambiente
 cp .env.example .env.local
+
+# Configure o banco de dados
+npx prisma migrate dev
+npx prisma db seed
 ```
 
 ### Scripts Disponíveis
@@ -95,6 +119,11 @@ npm run test:watch
 
 # Cobertura de testes
 npm run test:coverage
+
+# Prisma
+npx prisma migrate dev
+npx prisma db seed
+npx prisma studio
 ```
 
 ---
@@ -113,6 +142,9 @@ npm run test
 
 # Modo watch para desenvolvimento
 npm run test:watch
+
+# Cobertura de testes
+npm run test:coverage
 ```
 
 ---
@@ -135,6 +167,7 @@ npm run test:watch
 - Configuração personalizada em [`next.config.ts`](next.config.ts)
 - App Router habilitado
 - Turbopack para desenvolvimento
+- Middleware em [`middleware.ts`](middleware.ts)
 
 ### Sass
 
@@ -154,7 +187,7 @@ npm run test:watch
 ## 🌐 Deploy e SEO
 
 - Configuração de sitemap em [`next-sitemap.config.cjs`](next-sitemap.config.cjs)
-- Middleware customizado em [`middleware.ts`](middleware.ts)
+- Middleware customizado para proteção de rotas
 - Otimizações de build automáticas
 - Suporte a robots.txt
 
@@ -162,28 +195,97 @@ npm run test:watch
 
 ## 🛡️ Segurança e Qualidade
 
-- **Middleware** para proteção de rotas
+- **Middleware** para proteção de rotas em [`middleware.ts`](middleware.ts)
 - **TypeScript** para segurança de tipos
 - **ESLint** para qualidade de código
 - **Testes automatizados** com cobertura
 - **Variáveis de ambiente** seguras
 - **Rotas protegidas** com autenticação
+- **Schemas de validação** com Zod
 
 ---
 
 ## 🚦 Funcionalidades Implementadas
 
-Com base na estrutura do projeto, as seguintes funcionalidades estão disponíveis:
+### 🔐 Sistema de Autenticação
 
-- **Sistema de Autenticação**: Login e registro de usuários
-- **Dashboard Protegido**: Área restrita para usuários autenticados
-- **Gerenciamento de Orçamentos**: Controle de orçamentos pessoais
-- **Sistema de Cartões**: Gestão de cartões de crédito/débito
-- **Categorização**: Organização por categorias
-- **Metas Financeiras**: Definição e acompanhamento de metas
-- **Transações**: Registro e controle de transações
-- **API Completa**: Endpoints para todas as funcionalidades
-- **Interface Responsiva**: Design adaptado para todos os dispositivos
+- Login e registro de usuários
+- Proteção de rotas com middleware
+- Gerenciamento de sessões
+
+### 📊 Dashboard e Visualizações
+
+- Dashboard principal com métricas
+- Resumos financeiros e relatórios
+
+### 💳 Gestão de Cartões
+
+- CRUD completo de cartões de crédito/débito
+- Associação com transações
+- Controle de limites
+
+### 🏷️ Sistema de Categorias
+
+- Categorização de gastos e receitas
+- CRUD de categorias personalizadas
+- Filtros por categoria
+
+### 🎯 Metas Financeiras
+
+- Definição e acompanhamento de metas
+- Progresso visual das metas
+- Alertas e notificações
+
+### 💰 Gestão de Orçamentos
+
+- Criação de orçamentos mensais
+- Controle de gastos por categoria
+- Relatórios de performance
+
+### 📝 Controle de Transações
+
+- Registro completo de receitas e despesas
+- Histórico detalhado de transações
+- Filtros e pesquisas avançadas
+
+### 🛒 Sistema de Pagamentos
+
+- Processamento de checkout
+- Gestão de assinaturas
+- Múltiplos métodos de pagamento
+
+### 🛠️ API Completa
+
+- Endpoints RESTful para todas as funcionalidades
+- Validação de dados com schemas
+- Tratamento de erros padronizado
+
+---
+
+## 📋 Variáveis de Ambiente
+
+Crie um arquivo `.env.local` baseado no `.env.example`:
+
+```env
+# Database
+DATABASE_URL="sua_url_do_banco"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="seu_secret_aqui"
+
+# Outros serviços
+# Adicione conforme necessário
+```
+
+---
+
+## 🎨 Estilização
+
+- **Sass** com organização modular
+- Componentes com estilos isolados
+- Design system consistente
+- Responsividade mobile-first
 
 ---
 
@@ -200,3 +302,9 @@ Com base na estrutura do projeto, as seguintes funcionalidades estão disponíve
 ## 📞 Contato
 
 Para dúvidas ou sugestões, entre em contato com o mantenedor do projeto através do GitHub: [lincon-cardoso](https://github.com/lincon-cardoso).
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
