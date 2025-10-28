@@ -12,20 +12,28 @@ enum Role {
   USER
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
 model User {
-  id           String            @id @default(uuid())
-  name         String?           @db.VarChar(255)
-  email        String            @unique @db.VarChar(255)
-  createdAt    DateTime          @default(now())
-  passwordHash String            @db.VarChar(255)
-  updatedAt    DateTime          @updatedAt
-  planName     String?           @db.VarChar(255)
-  plan         Plan?             @relation(fields: [planName], references: [name])
-  role         Role              @default(USER)
-  budgets      Budget[]
-  categories   ExpenseCategory[]
-  cards        Card[]
-  goals        Goal[]
+  id                    String             @id @default(uuid())
+  name                  String?            @db.VarChar(255)
+  email                 String             @unique @db.VarChar(255)
+  createdAt             DateTime           @default(now())
+  passwordHash          String             @db.VarChar(255)
+  updatedAt             DateTime           @updatedAt
+  planName              String?            @db.VarChar(255)
+  plan                  Plan?              @relation(fields: [planName], references: [name])
+  subscriptionExpiresAt DateTime?
+  subscriptionStatus    SubscriptionStatus @default(ACTIVE)
+  role                  Role               @default(USER)
+  budgets               Budget[]
+  categories            ExpenseCategory[]
+  cards                 Card[]
+  goals                 Goal[]
 
   @@index([email, createdAt])
 }

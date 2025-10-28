@@ -2,22 +2,111 @@
 import { useState } from "react";
 import styles from "@/app/planos/page.module.scss";
 import Footer from "@/components/footer/page";
-import Header from "@/components/Header/Header"; // Corrigido para case-sensitive no Linux
+import Header from "@/components/Header/Header";
+import BaseModal from "@/app/(protect)/dashboard/components/header/modals/BaseModal";
 
 export default function PlanosPage() {
-  const [activePlan, setActivePlan] = useState("Anual");
-  const [price, setPrice] = useState({ mensal: 19, anual: 190 }); // Preços base
-  const discount = 0.15; // 15% de desconto no plano anual
+  // Estado centralizado
+  const [planState, setPlanState] = useState({
+    selectedPeriod: "Anual" as "Mensal" | "Anual",
+    prices: {
+      pro: {
+        mensal: 19,
+        anual: 190,
+      },
+      premium: {
+        mensal: 38,
+        anual: 380,
+      },
+    },
+  });
 
-  const handlePlanChange = (plan: string) => {
-    setActivePlan(plan);
-    if (plan === "Anual") {
-      setPrice((prev) => ({
-        ...prev,
-        anual: Math.round(prev.mensal * 12 * (1 - discount)),
-      }));
-    }
+  // Estado do modal
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    selectedPlan: null as {
+      type: "gratuito" | "pro" | "premium";
+      name: string;
+      price: number;
+      period: string;
+    } | null,
+  });
+
+  const handlePlanChange = (period: "Mensal" | "Anual") => {
+    setPlanState((prev) => ({
+      ...prev,
+      selectedPeriod: period,
+    }));
   };
+
+  const getCurrentPrice = (planType: "pro" | "premium") => {
+    return planState.selectedPeriod === "Mensal"
+      ? planState.prices[planType].mensal
+      : planState.prices[planType].anual;
+  };
+
+  const handlePlanClick = (planType: "gratuito" | "pro" | "premium") => {
+    let planDetails;
+
+    if (planType === "gratuito") {
+      planDetails = {
+        type: planType,
+        name: "Gratuito",
+        price: 0,
+        period: "",
+      };
+    } else {
+      const valor = getCurrentPrice(planType);
+      const periodo = planState.selectedPeriod === "Mensal" ? "/mês" : "/ano";
+      planDetails = {
+        type: planType,
+        name: planType === "pro" ? "Pro" : "Premium",
+        price: valor,
+        period: periodo,
+      };
+    }
+
+    setModalState({
+      isOpen: true,
+      selectedPlan: planDetails,
+    });
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      selectedPlan: null,
+    });
+  };
+
+  const confirmPlan = () => {
+    if (modalState.selectedPlan) {
+      console.log("Plano confirmado:", modalState.selectedPlan);
+
+      // Lógica de redirecionamento
+      if (modalState.selectedPlan.type === "gratuito") {
+        // Redirecionar para registro
+        window.location.href = "/register";
+      } else {
+        // Armazenar dados do plano de forma segura no sessionStorage
+        const planData = {
+          plan: modalState.selectedPlan.type,
+          planName: modalState.selectedPlan.name,
+          valor: modalState.selectedPlan.price,
+          periodo: modalState.selectedPlan.period,
+          originalPeriod: planState.selectedPeriod,
+          timestamp: Date.now(),
+        };
+
+        sessionStorage.setItem("selectedPlan", JSON.stringify(planData));
+
+        // Redirecionar para checkout sem parâmetros na URL
+        window.location.href = "/checkout";
+      }
+    }
+    closeModal();
+  };
+
   return (
     <main>
       <Header />
@@ -30,7 +119,7 @@ export default function PlanosPage() {
         <div className={styles.options}>
           <button
             className={`${styles.option} ${
-              activePlan === "Mensal" ? styles.annual : ""
+              planState.selectedPeriod === "Mensal" ? styles.annual : ""
             }`}
             onClick={() => handlePlanChange("Mensal")}
           >
@@ -38,7 +127,7 @@ export default function PlanosPage() {
           </button>
           <button
             className={`${styles.option} ${
-              activePlan === "Anual" ? styles.annual : ""
+              planState.selectedPeriod === "Anual" ? styles.annual : ""
             }`}
             onClick={() => handlePlanChange("Anual")}
           >
@@ -57,14 +146,19 @@ export default function PlanosPage() {
             <li>Orçamentos simples</li>
             <li>Relatórios mensais</li>
           </ul>
-          <button className={styles.planButton}>Começar agora</button>
+          <button
+            className={styles.planButton}
+            onClick={() => handlePlanClick("gratuito")}
+          >
+            Começar agora
+          </button>
         </div>
         <div className={`${styles.plan} ${styles.popular}`}>
           <h2>Pro</h2>
           <p>Para quem quer ir além com automação.</p>
           <p className={styles.price}>
-            R$ {activePlan === "Mensal" ? price.mensal : price.anual}{" "}
-            {activePlan === "Mensal" ? "/mês" : "/ano"}
+            R$ {getCurrentPrice("pro")}{" "}
+            {planState.selectedPeriod === "Mensal" ? "/mês" : "/ano"}
           </p>
           <ul>
             <li>Alertas inteligentes</li>
@@ -73,14 +167,19 @@ export default function PlanosPage() {
             <li>Relatórios avançados</li>
             <li>Suporte prioritário</li>
           </ul>
-          <button className={styles.planButton}>Assinar Pro</button>
+          <button
+            className={styles.planButton}
+            onClick={() => handlePlanClick("pro")}
+          >
+            Assinar Pro
+          </button>
         </div>
         <div className={styles.plan}>
           <h2>Premium</h2>
           <p>Poder máximo para avançados e famílias.</p>
           <p className={styles.price}>
-            R$ {activePlan === "Mensal" ? price.mensal * 2 : price.anual * 2}{" "}
-            {activePlan === "Mensal" ? "/mês" : "/ano"}
+            R$ {getCurrentPrice("premium")}{" "}
+            {planState.selectedPeriod === "Mensal" ? "/mês" : "/ano"}
           </p>
           <ul>
             <li>Metas e previsão de fluxo</li>
@@ -88,9 +187,15 @@ export default function PlanosPage() {
             <li>Anexos de comprovantes</li>
             <li>Integração bancária (Beta)</li>
           </ul>
-          <button className={styles.planButton}>Ir de Premium</button>
+          <button
+            className={styles.planButton}
+            onClick={() => handlePlanClick("premium")}
+          >
+            Ir de Premium
+          </button>
         </div>
       </div>
+      {/* ...existing code... */}
       <div className={styles.comparativo}>
         <h2>Comparativo detalhado</h2>
         <table className={styles.table}>
@@ -230,13 +335,88 @@ export default function PlanosPage() {
       <div className={styles.startNow}>
         <h2>Pronto para começar?</h2>
         <p>Crie sua conta gratuita agora. Leva menos de 1 minuto.</p>
-        <button className={styles.startButton}>Criar conta gratuita</button>
+        <button
+          className={styles.startButton}
+          onClick={() => handlePlanClick("gratuito")}
+        >
+          Criar conta gratuita
+        </button>
         <p className={styles.securityNote}>
           🔒 SSL, criptografia e conformidade com LGPD.
         </p>
       </div>
+
+      {/* Modal de confirmação do plano */}
+      <BaseModal
+        open={modalState.isOpen}
+        onClose={closeModal}
+        title="Confirmação do Plano"
+        ariaLabelledBy="plano-modal-title"
+        ariaDescribedBy="plano-modal-description"
+      >
+        <div className={styles.modalBody}>
+          {modalState.selectedPlan && (
+            <>
+              <h3 id="plano-modal-description">
+                Plano Selecionado: {modalState.selectedPlan.name}
+              </h3>
+              {modalState.selectedPlan.price > 0 ? (
+                <p className={styles.modalPrice}>
+                  Valor: R$ {modalState.selectedPlan.price}
+                  {modalState.selectedPlan.period}
+                </p>
+              ) : (
+                <p className={styles.modalPrice}>Plano Gratuito</p>
+              )}
+
+              <div className={styles.planBenefits}>
+                <h4>O que está incluso:</h4>
+                <ul>
+                  {modalState.selectedPlan.type === "gratuito" && (
+                    <>
+                      <li>Dashboard básico</li>
+                      <li>Até 2 carteiras</li>
+                      <li>Orçamentos simples</li>
+                      <li>Relatórios mensais</li>
+                    </>
+                  )}
+                  {modalState.selectedPlan.type === "pro" && (
+                    <>
+                      <li>Alertas inteligentes</li>
+                      <li>Categorias ilimitadas</li>
+                      <li>Exportação CSV/OFX</li>
+                      <li>Relatórios avançados</li>
+                      <li>Suporte prioritário</li>
+                    </>
+                  )}
+                  {modalState.selectedPlan.type === "premium" && (
+                    <>
+                      <li>Metas e previsão de fluxo</li>
+                      <li>Contas compartilhadas</li>
+                      <li>Anexos de comprovantes</li>
+                      <li>Integração bancária (Beta)</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+
+              <p>Confirma a seleção deste plano?</p>
+            </>
+          )}
+        </div>
+        <div className={styles.modalActions}>
+          <button className={styles.cancelButton} onClick={closeModal}>
+            Cancelar
+          </button>
+          <button className={styles.confirmButton} onClick={confirmPlan}>
+            {modalState.selectedPlan?.price && modalState.selectedPlan.price > 0
+              ? "Prosseguir para Pagamento"
+              : "Criar Conta Gratuita"}
+          </button>
+        </div>
+      </BaseModal>
+
       <Footer />
     </main>
   );
 }
-

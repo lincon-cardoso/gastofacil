@@ -7,10 +7,12 @@ async function main() {
   await prisma.plan.upsert({
     where: { name: "Free" },
     update: {
+      price: 0,
       budgetLimit: 2, // Até 2 carteiras
       transactionLimit: 20, // 20 categorias
       features: [
         "Dashboard básico",
+        "Até 2 carteiras",
         "Orçamentos simples",
         "Relatórios mensais",
       ],
@@ -18,10 +20,12 @@ async function main() {
     create: {
       name: "Free",
       price: 0,
+      description: "O essencial para começar bem",
       budgetLimit: 2,
       transactionLimit: 20,
       features: [
         "Dashboard básico",
+        "Até 2 carteiras",
         "Orçamentos simples",
         "Relatórios mensais",
       ],
@@ -31,8 +35,9 @@ async function main() {
   await prisma.plan.upsert({
     where: { name: "Pro" },
     update: {
-      budgetLimit: undefined, // Carteiras ilimitadas
-      transactionLimit: undefined, // Categorias ilimitadas
+      price: 19.0,
+      budgetLimit: 0, // Ilimitado (0 = sem limite)
+      transactionLimit: 0, // Ilimitado
       features: [
         "Alertas inteligentes",
         "Categorias ilimitadas",
@@ -44,8 +49,9 @@ async function main() {
     create: {
       name: "Pro",
       price: 19.0,
-      budgetLimit: undefined,
-      transactionLimit: undefined,
+      description: "Para quem quer ir além com automação",
+      budgetLimit: 0,
+      transactionLimit: 0,
       features: [
         "Alertas inteligentes",
         "Categorias ilimitadas",
@@ -59,8 +65,9 @@ async function main() {
   await prisma.plan.upsert({
     where: { name: "Premium" },
     update: {
-      budgetLimit: undefined, // Carteiras ilimitadas
-      transactionLimit: undefined, // Categorias ilimitadas
+      price: 38.0,
+      budgetLimit: 0, // Ilimitado
+      transactionLimit: 0, // Ilimitado
       features: [
         "Metas e previsão de fluxo",
         "Contas compartilhadas",
@@ -71,8 +78,9 @@ async function main() {
     create: {
       name: "Premium",
       price: 38.0,
-      budgetLimit: undefined,
-      transactionLimit: undefined,
+      description: "Poder máximo para avançados e famílias",
+      budgetLimit: 0,
+      transactionLimit: 0,
       features: [
         "Metas e previsão de fluxo",
         "Contas compartilhadas",
@@ -81,6 +89,8 @@ async function main() {
       ],
     },
   });
+
+  console.log("✅ Planos criados/atualizados com sucesso!");
 }
 
 main()

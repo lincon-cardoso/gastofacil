@@ -1,0 +1,428 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+}
+
+.checkoutWrapper {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+// Resumo do Plano
+.planSummary {
+    background: linear-gradient(135deg, #0b1220 0%, #1a2332 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+
+    h2 {
+        margin: 0 0 1.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e6eef8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 1rem;
+    }
+}
+
+.planDetails {
+    .planHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e6eef8;
+        }
+
+        .planBadge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+    }
+
+    .priceInfo {
+        text-align: center;
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+            display: block;
+
+            .period {
+                font-size: 1rem;
+                color: #94a3b8;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .benefits {
+        h4 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e6eef8;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                position: relative;
+                padding: 0.5rem 0 0.5rem 1.5rem;
+                color: #cfe8ff;
+                line-height: 1.5;
+
+                &::before {
+                    content: "✓";
+                    position: absolute;
+                    left: 0;
+                    color: #10b981;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}
+
+// Formulário de Checkout
+.checkoutForm {
+    background: linear-gradient(135deg, #0b1220 0%, #1a2332 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    h2 {
+        margin: 0 0 2rem 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #e6eef8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 1rem;
+    }
+
+    .section {
+        margin-bottom: 2rem;
+
+        h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e6eef8;
+        }
+    }
+
+    .formGroup {
+        margin-bottom: 1.5rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #e6eef8;
+            font-size: 0.875rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: #0f1729;
+            color: #e6eef8;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+
+            &:focus {
+                outline: none;
+                border-color: #10b981;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            }
+
+            &::placeholder {
+                color: #64748b;
+            }
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                background: rgba(255, 255, 255, 0.05);
+            }
+        }
+    }
+
+    .formRow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        @media (max-width: 640px) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+// Alertas de erro e sucesso
+.errorAlert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #ef4444;
+
+    .errorIcon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    p {
+        flex: 1;
+        margin: 0;
+        font-weight: 600;
+        color: #ef4444 !important;
+    }
+
+    .closeError {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+.successAlert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    color: #10b981;
+
+    .successIcon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    p {
+        margin: 0;
+        font-weight: 600;
+        color: #10b981 !important;
+    }
+}
+
+// Botões de Ação
+.actionButtons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+    }
+}
+
+.backButton {
+    flex: 1;
+    background: transparent;
+    color: #e6eef8;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.submitButton {
+    flex: 2;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        background: #6b7280;
+    }
+}
+
+// Informações de Segurança
+.securityInfo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.securityItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .securityIcon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e6eef8;
+    }
+
+    p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+}
+
+// Mensagem de Erro
+.errorMessage {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-radius: 16px;
+    margin: 2rem 0;
+
+    h1 {
+        margin: 0 0 1rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    p {
+        margin: 0 0 2rem 0;
+        color: #fecaca;
+        line-height: 1.6;
+    }
+
+    .backButton {
+        background: #fff;
+        color: #dc2626;
+        border: none;
+
+        &:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+    }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .checkoutWrapper {
+        gap: 1.5rem;
+    }
+
+    .planSummary,
+    .checkoutForm {
+        padding: 1.5rem;
+    }
+
+    .planSummary {
+        position: static;
+    }
+
+    .securityInfo {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+}
