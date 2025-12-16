@@ -17,8 +17,20 @@ export async function hashPassword(plain: string): Promise<string> {
     const { default: argon2 } = await import("argon2");
     return await argon2.hash(plain); // Retorna o hash da senha
   } catch (error) {
-    console.error("Erro ao gerar hash da senha:", error);
-    throw new Error("Falha ao processar senha");
+    // Em alguns ambientes (deploy/serverless) o módulo nativo pode falhar.
+    // Fallback para bcryptjs (puro JS) para não bloquear cadastro/login.
+    console.error(
+      "Erro ao gerar hash com Argon2. Usando fallback bcryptjs.",
+      error
+    );
+    try {
+      const bcrypt = await import("bcryptjs");
+      // 12 rounds é um equilíbrio razoável para custo/segurança em serverless.
+      return await bcrypt.hash(plain, 12);
+    } catch (fallbackError) {
+      console.error("Erro ao gerar hash com bcryptjs:", fallbackError);
+      throw new Error("Falha ao processar senha");
+    }
   }
 }
 
@@ -30,9 +42,26 @@ export async function verifyPassword(
   assertServer(); // Garante que está no servidor
 
   try {
-    // Import dinâmico para evitar problemas no client-side
-    const { default: argon2 } = await import("argon2");
-    return await argon2.verify(hash, plain); // Retorna true se a senha estiver correta
+    // Detecta o algoritmo pelo prefixo do hash para manter compatibilidade.
+    if (hash.startsWith("$argon2")) {
+      const { default: argon2 } = await import("argon2");
+      return await argon2.verify(hash, plain);
+    }
+
+    // Bcrypt (ex.: $2a$, $2b$, $2y$)
+    if (hash.startsWith("$2")) {
+      const bcrypt = await import("bcryptjs");
+      return await bcrypt.compare(plain, hash);
+    }
+
+    // Fallback: tenta Argon2 e, se falhar, bcryptjs
+    try {
+      const { default: argon2 } = await import("argon2");
+      return await argon2.verify(hash, plain);
+    } catch {
+      const bcrypt = await import("bcryptjs");
+      return await bcrypt.compare(plain, hash);
+    }
   } catch (error) {
     console.error("Erro ao verificar senha:", error);
     return false; // Retorna false em caso de erro

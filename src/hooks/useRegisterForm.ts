@@ -61,14 +61,33 @@ export const useRegisterForm = () => {
         }),
       });
 
-      const result = await response.json();
+      let result: unknown = null;
+      try {
+        result = await response.json();
+      } catch {
+        // Se o servidor retornar HTML/erro não-JSON, evita crash no client.
+        result = null;
+      }
 
       // Trata resposta de erro da API
       if (!response.ok) {
-        if (result.errors && typeof result.errors === "object") {
-          setErrors(result.errors as FormErrors);
-        } else if (result.error) {
-          setErrors({ general: result.error });
+        if (
+          result &&
+          typeof result === "object" &&
+          "errors" in result &&
+          (result as { errors?: unknown }).errors &&
+          typeof (result as { errors?: unknown }).errors === "object"
+        ) {
+          setErrors((result as { errors: FormErrors }).errors);
+        } else if (
+          result &&
+          typeof result === "object" &&
+          "error" in result &&
+          typeof (result as { error?: unknown }).error === "string"
+        ) {
+          setErrors({ general: (result as { error: string }).error });
+        } else {
+          setErrors({ general: "Não foi possível concluir o cadastro." });
         }
         setIsLoading(false);
         return;
