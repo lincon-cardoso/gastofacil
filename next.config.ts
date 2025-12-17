@@ -167,11 +167,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
-  webpack: (config) => {
-    // Remove qualquer configuração incorreta relacionada ao React DevTools
-    return config;
-  },
 };
 
 export default nextConfig;
