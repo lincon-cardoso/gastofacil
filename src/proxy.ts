@@ -267,8 +267,8 @@ function applyIntelligentCaching(
   }
 }
 
-// === MIDDLEWARE PRINCIPAL ===
-export async function middleware(req: NextRequest) {
+// === PROXY PRINCIPAL ===
+export async function proxy(req: NextRequest) {
   const config = getConfig();
 
   // Modo manutenção

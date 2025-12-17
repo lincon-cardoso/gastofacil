@@ -109,11 +109,25 @@ export const authOptions: NextAuthOptions = {
     },
     // Callback executado quando uma sessão é acessada
     async session({ session, token }) {
-      try {
-        if (token.uid) {
-          session.userId = token.uid as string;
+      const isDev = process.env.NODE_ENV === "development";
 
-          // Busca dados atualizados do usuário no banco
+      if (token.uid) {
+        session.userId = token.uid as string;
+
+        // Sempre popula o que já está no token (evita depender do banco em dev e
+        // também serve como fallback caso a conexão falhe).
+        session.user = {
+          ...session.user,
+          role: token.role as Role | undefined,
+          plan: (token.plan as CustomUser["plan"]) ?? undefined,
+        };
+
+        // Em desenvolvimento, evita bater no banco a cada acesso de sessão.
+        // Isso reduz bastante a chance de erro P1017 "Server has closed the connection".
+        if (isDev) return session;
+
+        try {
+          // Busca dados atualizados do usuário no banco (somente em produção)
           const dbUser = await prisma.user.findUnique({
             where: { id: token.uid as string },
             include: { plan: true },
@@ -135,12 +149,18 @@ export const authOptions: NextAuthOptions = {
                 : undefined,
             };
           }
+        } catch (error) {
+          // Fallback silencioso: mantém dados do token.
+          // Log reduzido para não poluir o console em caso de flutuação da conexão.
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Falha ao consultar usuário no banco";
+          console.warn("Callback de sessão: fallback sem banco:", message);
         }
-        return session;
-      } catch (error) {
-        console.error("Erro no callback de sessão:", error);
-        return session;
       }
+
+      return session;
     },
   },
 };
