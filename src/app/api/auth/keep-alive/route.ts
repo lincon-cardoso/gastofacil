@@ -10,6 +10,11 @@ type JwtWithJti = {
 // Função para renovar o TTL da sessão no Upstash
 export async function GET(req: NextRequest) {
   try {
+    // Em desenvolvimento, não tenta chamar o Upstash (evita erro de DNS/ruído no console)
+    if (process.env.NODE_ENV !== "production") {
+      return NextResponse.json({ ok: true, renewed: false }, { status: 200 });
+    }
+
     // Obtém o token JWT da requisição
     const token = (await getToken({
       req,
@@ -62,11 +67,12 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     // Loga o erro no ambiente de desenvolvimento
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[keep-alive] erro:", e);
+      const message = e instanceof Error ? e.message : String(e);
+      console.warn("[keep-alive] erro:", message);
     }
 
-    // Retorna uma resposta de erro genérica
-    return NextResponse.json({ ok: false }, { status: 200 });
+    // Best-effort: não derruba o app se o keep-alive falhar
+    return NextResponse.json({ ok: true, renewed: false }, { status: 200 });
   }
 }
 
